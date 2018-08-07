@@ -327,7 +327,8 @@ div.section {
 <strong>workflowr checks:</strong> <small>(Click a bullet for more information)</small>
 <ul>
 <li>
-<p><details> <summary> <strong style="color:red;">✖</strong> <strong>R Markdown file:</strong> uncommitted changes </summary> The R Markdown file has unstaged changes. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>R Markdown file:</strong> up-to-date </summary></p>
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
 </details>
 </li>
 <li>
@@ -346,15 +347,12 @@ div.section {
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/mengyin/general_ash/tree/7836ca3351a4995f184bd7b25a0f64537658dc29" target="_blank">7836ca3</a> </summary></p>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/mengyin/general_ash/tree/60b00bcfbed10304185d4cf5bb07db65c2efa4cc" target="_blank">60b00bc</a> </summary></p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 <pre><code>
 Ignored files:
     Ignored:    analysis/._index.Rmd
     Ignored:    analysis/stem_cache/
-
-Unstaged changes:
-    Modified:   analysis/stem.Rmd
 
 </code></pre>
 Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes. </details>
@@ -383,6 +381,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/60b00bcfbed10304185d4cf5bb07db65c2efa4cc/analysis/stem.Rmd" target="_blank">60b00bc</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-07
+</td>
+<td style="text-align:left;">
+fix stem.html
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/mengyin/general_ash/60b00bcfbed10304185d4cf5bb07db65c2efa4cc/docs/stem.html" target="_blank">60b00bc</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-07
+</td>
+<td style="text-align:left;">
+fix stem.html
+</td>
+</tr>
 <tr>
 <td style="text-align:left;">
 html
@@ -534,16 +566,106 @@ boxplot(A$pve.ct.fash, A$pve.ct.ftest, A$pve.ind.fash, A$pve.ind.ftest,
         ylab=&quot;Estimated PVE&quot;,
         main=&quot;PVE estimates (with L-iPSC A)&quot;)</code></pre>
 <p><img src="figure/stem.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-2-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/60b00bcfbed10304185d4cf5bb07db65c2efa4cc/docs/figure/stem.Rmd/unnamed-chunk-2-1.png" target="_blank">60b00bc</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-07
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <pre class="r"><code>boxplot(B$pve.ct.fash, B$pve.ct.ftest, B$pve.ind.fash, B$pve.ind.ftest,
         names=c(&quot;CT(fash)&quot;,&quot;CT(F-test)&quot;,&quot;IND(fash)&quot;,&quot;IND(F-test)&quot;), 
         ylab=&quot;Estimated PVE&quot;,
         main=&quot;PVE estimates (with L-iPSC B)&quot;)</code></pre>
 <p><img src="figure/stem.Rmd/unnamed-chunk-2-2.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-2-2.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/60b00bcfbed10304185d4cf5bb07db65c2efa4cc/docs/figure/stem.Rmd/unnamed-chunk-2-2.png" target="_blank">60b00bc</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-07
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <pre class="r"><code>boxplot(C$pve.ct.fash, B$pve.ct.ftest, C$pve.ind.fash, C$pve.ind.ftest,
         names=c(&quot;CT(fash)&quot;,&quot;CT(F-test)&quot;,&quot;IND(fash)&quot;,&quot;IND(F-test)&quot;), 
         ylab=&quot;Estimated PVE&quot;,
         main=&quot;PVE estimates (with L-iPSC C)&quot;)</code></pre>
 <p><img src="figure/stem.Rmd/unnamed-chunk-2-3.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-2-3.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/60b00bcfbed10304185d4cf5bb07db65c2efa4cc/docs/figure/stem.Rmd/unnamed-chunk-2-3.png" target="_blank">60b00bc</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-07
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>Burrows et al (2016) simply uses the limma DE pipeline and claims that only one gene is classified as DE between L-iPSC and F-iPSC. They also use simple ANOVA <span class="math inline">\(R^2\)</span> to record the variance explained by celltypes or individuals (note that <span class="math inline">\(R^2\)</span> is different from our defined “PVE” here) and conclude that “individual genetic background captures a much larger proportion of gene regulatory variation than cell type of origin”.</p>
 <p>We see that the FASH results are generally consistent with their results, that almost all genes have almost zero celltype PVEs. Compared to the raw F-test PVE estimates (which are pretty noisy), I think FASH gives much more intuitive results.</p>
 <p>According to FASH results, both datasets with L-iPSC replicate A or C suggest that gene “ENSG00000198825” is differentially expressed between L-iPSC and F-iPSC (FDR=0.05), but the dataset with L-iPSC replicate B does not any give significant DE genes (FDR=0.05). We check this gene:</p>
@@ -581,6 +703,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/60b00bcfbed10304185d4cf5bb07db65c2efa4cc/docs/figure/stem.Rmd/unnamed-chunk-4-1.png" target="_blank">60b00bc</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-07
+</td>
+</tr>
 <tr>
 <td style="text-align:left;">
 <a href="https://github.com/mengyin/general_ash/blob/7836ca3351a4995f184bd7b25a0f64537658dc29/docs/figure/stem.Rmd/unnamed-chunk-4-1.png" target="_blank">7836ca3</a>
