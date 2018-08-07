@@ -1,0 +1,222 @@
+---
+title: "Use binomial ASH to compare bulk RNA-seq vs scRNA-seq data"
+author: "Mengyin Lu"
+date: "2018-08-07"
+output: workflowr::wflow_html
+---
+
+## Introduction
+
+The purpose of this document was to perform quantitative assessment of the difference between the counts of gene $g$ in single cell data and the counts of gene $g$ in bulk data. See [here](https://stephens999.github.io/singlecell-ideas/bulk-vs-single.html) for Matthew's formulation of the problem.
+
+The challenge here is that for each gene $g$, the total counts $C_g = X_g^s + X_g^b$ may be too big or too small by chance. We apply two approaches that can account for this uncertainty.
+
+
+## Data
+
+We use the data from [Tung et al](https://www.nature.com/articles/srep39921). The data files are available [here](https://github.com/jdblischak/singleCellSeq).
+
+```{r}
+library(tidyr)
+library(dplyr)
+anno <- read.table("data/annotation.txt", header = TRUE,
+                   stringsAsFactors = FALSE)
+molecules <- read.table("data/molecules.txt", header = TRUE,
+                    stringsAsFactors = FALSE)
+reads_bulk <- read.table("data/reads-bulk.txt", header = TRUE, stringsAsFactors = FALSE)
+```
+
+We take one replicate for now: NA19101.r1. 
+
+```{r}
+molecules_19101_r1 <- molecules[ ,anno$batch == "NA19101.r1"]
+reads_bulk_19101_r1 <- reads_bulk[ ,grep("NA19101.r1", colnames(reads_bulk))]
+# Let's compute for the single cell data, the counts of gene $g$ across all the individual cells. 
+```
+
+Compute $X_g^{b}$ and $X_g^s$:
+
+```{r}
+counts_single <- rowSums(molecules_19101_r1)
+counts_bulk <- reads_bulk_19101_r1
+
+all.equal(rownames(counts_bulk), rownames(counts_single))
+
+counts <- data.frame(counts_single, counts_bulk)
+row.names(counts) <- row.names(molecules_19101_r1)
+counts <- counts[which(rowSums(counts)>0),]
+dim(counts)
+```
+
+Compute the ML estimates $\hat{p}_g=X_g^{b}/(X_g^{b}+X_g^{s})$. We also form a filtered subset which removes genes with all zero bulk reads or all zero single cell reads.
+
+```{r}
+counts$total <- counts$counts_bulk + counts$counts_single
+counts$mn <- counts$counts_bulk/counts$total
+
+library(tibble) 
+counts_filtered <- counts %>% rownames_to_column('gene') %>% 
+  filter(!(mn == 0 | mn == 1)) %>% column_to_rownames('gene')
+```
+
+Plot the ML estimate $\hat{p}_g = X_g^s / (X_g^s + X_g^b)$.
+
+```{r}
+library(ggplot2)
+ggplot(data.frame(mn = with(counts, counts_bulk/(counts_bulk + counts_single))),
+       aes(x = mn)) + geom_histogram(bins = 40)+
+  labs(x = "ML estimate", y = "Frequency",
+       title = "Histogram of ML estimates (unfiltered data)")
+
+ggplot(data.frame(mn = with(counts_filtered, counts_bulk/(counts_bulk + counts_single))),
+       aes(x = mn)) + geom_histogram(bins = 40)+
+  labs(x = "ML estimate", y = "Frequency",
+       title = "Histogram of ML estimates (unfiltered data)")
+```
+
+## Method 1
+
+Here we follow the methods in this [blog post](http://varianceexplained.org/r/empirical_bayes_baseball/).
+
+Use `optim` to find beta prior parameters.
+
+```{r}
+loglik <- function(mu, x) { 
+    sum(-dbeta(x,mu[1],mu[2],log = TRUE)) 
+    } 
+ 
+fit_optim <- optim(par = c(30,20), fn = loglik,
+                   x = counts_filtered$mn, 
+                   method = "L-BFGS-B", lower=c(0,0))
+fit_optim
+
+ggplot() +
+  geom_histogram(data = counts_filtered, aes(x = mn, y = ..density..), bins = 40) +
+  geom_density(data = data.frame(x = rbeta(100, fit_optim$par[1], fit_optim$par[2])), 
+               aes (x = x), color = "blue")
+```
+
+Compute posterior mean.
+
+```{r}
+alpha0 <- fit_optim$par[1]
+beta0 <- fit_optim$par[2]
+counts_eb <- counts_filtered %>%
+  mutate(eb_estimate = (counts_bulk + alpha0)/(counts_single + counts_bulk + alpha0 + beta0))
+```
+
+Plot $p$ estimates.
+
+```{r}
+counts_eb %>%
+  ggplot(aes(mn, eb_estimate)) +
+  geom_point(aes(colour = counts_bulk), colour = "black") +
+  geom_vline(xintercept = .5, colour = "blue", lty = 3) + 
+  geom_hline(yintercept = .5, colour = "blue", lty = 2) +
+  geom_abline(intercept = 0, slope = 1, colour = "blue") +
+  labs(x = "ML estimate", y = "Posterior mean",
+       title = "Beta prior, empirical bayes estimate (filtered data)") +
+  coord_fixed(ratio = 1)
+```
+
+
+## Method 2: binomial ASH
+
+Suppose the bulk data and single cell data are independent, we have $X_g^b\sim Bin(X_g^b+X_g^s, p_g)$. We use the binomial ASH to estimate $p_g$: assuming that $p_g$ comes from a unimodal prior, the posterior mean of $p_g$ is used to estimate $p_g$.  
+
+Applying to filtered data:
+
+```{r,warning=FALSE,message=FALSE}
+library(ashr)
+ngenes <- dim(counts_filtered)[1]
+
+fit_filter <- ash.workhorse(rep(0, ngenes), 
+                               1, 
+                               lik = lik_binom(counts_filtered$counts_bulk, 
+                                               counts_filtered$total),
+                               mixcompdist = "halfuniform", prior="uniform")
+summary(fit_filter$result$PosteriorMean)
+```
+
+Fitted binomial ASH prior density:
+
+```{r}
+# plot density of an unimix object g on x
+dens_unimix = function(g, x){
+  sapply(x, dens_unimix_sing, pi=g$pi, a=g$a, b=g$b)
+}
+
+dens_unimix_sing = function(x,pi,a,b){
+  sum((x>=a & x<b)/(b-a)*pi,na.rm=TRUE)
+}
+
+x <- seq(0,1,by=0.001)
+g <- fit_filter$fitted_g
+dens_uni <- dens_unimix(g, x)
+pointmass <- data.frame(point = g$a[g$a==g$b],
+                        mass = g$pi[g$a==g$b])
+
+hist(counts_filtered$mn,100,prob=TRUE,col=rgb(0,1,0,0.5),ylim=c(0,5),
+     xlab="p",main="Histogram of MLE and ash posterior mean for p (filterd data)")
+hist(fit_filter$result$PosteriorMean, 100, prob=TRUE,
+     xlim=c(0,1), col=rgb(0,0,1,0.5), add=T)
+lines(x, dens_uni, type="l",col="red",lwd=2)
+legend("topleft", legend=c("MLE","ash posterior mean","ash fitted prior"), col=c(rgb(0,1,0,0.5),rgb(0,0,1,0.5),2), pt.cex=2, pch=15 )
+```
+
+Fitted prior mode: `r g$a[1]`.
+
+Plot binomial ASH $p$ estimates vs the ML estimates $\hat{p}$.
+
+```{r}
+counts_filtered %>% 
+  mutate(posterior_mean = fit_filter$result$PosteriorMean) %>%
+  ggplot(aes(mn, posterior_mean)) +
+  geom_point(aes(colour = counts_bulk), colour = "black") +
+  geom_vline(xintercept = .5, colour = "blue", lty = 3) + 
+  geom_hline(yintercept = .5, colour = "blue", lty = 2) +
+  geom_abline(intercept = 0, slope = 1, colour = "blue") +
+  labs(x = "ML estimate", y = "Posterior mean",
+       title = "Binomial ASH estimate (filtered data)") +
+  coord_fixed(ratio = 1)
+```
+
+Genes with smallest/largest posterior mean of $p_g$:
+
+```{r}
+counts_filtered$postmean <- fit_filter$result$PosteriorMean
+
+# genes with smallest posterior mean
+counts_filtered[order(counts_filtered$postmean)[1:10],]
+
+# genes with largest posterior mean
+counts_filtered[order(counts_filtered$postmean,decreasing=TRUE)[1:10],]
+```
+
+Applying to unfiltered data:
+
+```{r,message=FALSE,warning=FALSE}
+ngenes <- dim(counts)[1]
+counts$total <- counts$counts_single+counts$counts_bulk
+
+fit_unfilter <- ash.workhorse(rep(0, ngenes), 1,
+                              lik = lik_binom(counts$counts_bulk,counts$total),
+                              mixcompdist = "halfuniform", prior="uniform")
+summary(fit_unfilter$result$PosteriorMean)
+```
+
+Plot binomial ASH $p$ estimates vs the ML estimates $\hat{p}$.
+
+```{r}
+counts %>% 
+  mutate(posterior_mean = fit_unfilter$result$PosteriorMean) %>%
+  ggplot(aes(mn, posterior_mean)) +
+  geom_point(aes(colour = counts_bulk), colour = "black") +
+  geom_vline(xintercept = .5, colour = "blue", lty = 3) + 
+  geom_hline(yintercept = .5, colour = "blue", lty = 2) +
+  geom_abline(intercept = 0, slope = 1, colour = "blue") +
+  labs(x = "ML estimate", y = "Posterior mean",
+       title = "Binomial ASH estimate (unfiltered data)") +
+  coord_fixed(ratio = 1)
+```
+

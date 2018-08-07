@@ -8,4 +8,10 @@ output:
 
 Here are some application examples for general ASH.
 
+ASH with log-F likelihood (FASH):
+
 - [Use FASH to analyze the stem cell gene expression data (Burrows data).](stem.html)
+
+ASH with binomial likelihood:
+
+- [Use binomial ASH to compare bulk RNA-seq vs scRNA-seq data](bulk_single.html)
