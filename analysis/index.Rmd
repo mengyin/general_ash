@@ -1,9 +1,11 @@
 ---
-title: "Home"
+title: "General Adaptive Shrinkage (ASH) Application Examples"
 site: workflowr::wflow_site
 output:
   workflowr::wflow_html:
     toc: false
 ---
 
-Welcome to my research website.
+Here are some application examples for general ASH.
+
+- [Use FASH to analyze the stem cell gene expression data (Burrows data).](stem.html)
