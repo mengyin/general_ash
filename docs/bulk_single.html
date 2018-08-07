@@ -347,7 +347,7 @@ div.section {
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/mengyin/general_ash/tree/f474e9b0b05a35231e3afa1213d0857d468fcd6e" target="_blank">f474e9b</a> </summary></p>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/mengyin/general_ash/tree/f41c8e1d5a0d38388ff499dbff5e37d3281b9569" target="_blank">f41c8e1</a> </summary></p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 <pre><code>
 Ignored files:
@@ -356,11 +356,6 @@ Ignored files:
     Ignored:    data/._annotation.txt
     Ignored:    data/._molecules.txt
     Ignored:    data/._reads-bulk.txt
-
-Untracked files:
-    Untracked:  data/annotation.txt
-    Untracked:  data/molecules.txt
-    Untracked:  data/reads-bulk.txt
 
 </code></pre>
 Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes. </details>
@@ -389,6 +384,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/f41c8e1d5a0d38388ff499dbff5e37d3281b9569/analysis/bulk_single.Rmd" target="_blank">f41c8e1</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-07
+</td>
+<td style="text-align:left;">
+edit bulk vs single analysis
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/mengyin/general_ash/5a0352da23c84e1cedf52054b04979694493ed8f/docs/bulk_single.html" target="_blank">5a0352d</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-07
+</td>
+<td style="text-align:left;">
+Build site.
+</td>
+</tr>
 <tr>
 <td style="text-align:left;">
 Rmd
@@ -464,14 +493,74 @@ ggplot(data.frame(mn = with(counts, counts_bulk/(counts_bulk + counts_single))),
   labs(x = &quot;ML estimate&quot;, y = &quot;Frequency&quot;,
        title = &quot;Histogram of ML estimates (unfiltered data)&quot;)</code></pre>
 <p><img src="figure/bulk_single.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-5-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/5a0352da23c84e1cedf52054b04979694493ed8f/docs/figure/bulk_single.Rmd/unnamed-chunk-5-1.png" target="_blank">5a0352d</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-07
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <pre class="r"><code>ggplot(data.frame(mn = with(counts_filtered, counts_bulk/(counts_bulk + counts_single))),
        aes(x = mn)) + geom_histogram(bins = 40)+
   labs(x = &quot;ML estimate&quot;, y = &quot;Frequency&quot;,
        title = &quot;Histogram of ML estimates (unfiltered data)&quot;)</code></pre>
 <p><img src="figure/bulk_single.Rmd/unnamed-chunk-5-2.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-5-2.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/5a0352da23c84e1cedf52054b04979694493ed8f/docs/figure/bulk_single.Rmd/unnamed-chunk-5-2.png" target="_blank">5a0352d</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-07
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 </div>
-<div id="method-1" class="section level2">
-<h2>Method 1</h2>
+<div id="method-1-beta-binomial-model" class="section level2">
+<h2>Method 1: beta-binomial model</h2>
 <p>Here we follow the methods in this <a href="http://varianceexplained.org/r/empirical_bayes_baseball/">blog post</a>.</p>
 <p>Use <code>optim</code> to find beta prior parameters.</p>
 <pre class="r"><code>loglik &lt;- function(mu, x) { 
@@ -502,6 +591,36 @@ $message
   geom_density(data = data.frame(x = rbeta(100, fit_optim$par[1], fit_optim$par[2])), 
                aes (x = x), color = &quot;blue&quot;)</code></pre>
 <p><img src="figure/bulk_single.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-6-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/5a0352da23c84e1cedf52054b04979694493ed8f/docs/figure/bulk_single.Rmd/unnamed-chunk-6-1.png" target="_blank">5a0352d</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-07
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>Compute posterior mean.</p>
 <pre class="r"><code>alpha0 &lt;- fit_optim$par[1]
 beta0 &lt;- fit_optim$par[2]
@@ -518,6 +637,36 @@ counts_eb &lt;- counts_filtered %&gt;%
        title = &quot;Beta prior, empirical bayes estimate (filtered data)&quot;) +
   coord_fixed(ratio = 1)</code></pre>
 <p><img src="figure/bulk_single.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-8-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/5a0352da23c84e1cedf52054b04979694493ed8f/docs/figure/bulk_single.Rmd/unnamed-chunk-8-1.png" target="_blank">5a0352d</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-07
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 </div>
 <div id="method-2-binomial-ash" class="section level2">
 <h2>Method 2: binomial ASH</h2>
@@ -557,6 +706,36 @@ hist(fit_filter$result$PosteriorMean, 100, prob=TRUE,
 lines(x, dens_uni, type=&quot;l&quot;,col=&quot;red&quot;,lwd=2)
 legend(&quot;topleft&quot;, legend=c(&quot;MLE&quot;,&quot;ash posterior mean&quot;,&quot;ash fitted prior&quot;), col=c(rgb(0,1,0,0.5),rgb(0,0,1,0.5),2), pt.cex=2, pch=15 )</code></pre>
 <p><img src="figure/bulk_single.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-10-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/5a0352da23c84e1cedf52054b04979694493ed8f/docs/figure/bulk_single.Rmd/unnamed-chunk-10-1.png" target="_blank">5a0352d</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-07
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>Fitted prior mode: 0.7623608.</p>
 <p>Plot binomial ASH <span class="math inline">\(p\)</span> estimates vs the ML estimates <span class="math inline">\(\hat{p}\)</span>.</p>
 <pre class="r"><code>counts_filtered %&gt;% 
@@ -570,6 +749,36 @@ legend(&quot;topleft&quot;, legend=c(&quot;MLE&quot;,&quot;ash posterior mean&qu
        title = &quot;Binomial ASH estimate (filtered data)&quot;) +
   coord_fixed(ratio = 1)</code></pre>
 <p><img src="figure/bulk_single.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-11-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/5a0352da23c84e1cedf52054b04979694493ed8f/docs/figure/bulk_single.Rmd/unnamed-chunk-11-1.png" target="_blank">5a0352d</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-07
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>Genes with smallest/largest posterior mean of <span class="math inline">\(p_g\)</span>:</p>
 <pre class="r"><code>counts_filtered$postmean &lt;- fit_filter$result$PosteriorMean
 
@@ -621,6 +830,36 @@ summary(fit_unfilter$result$PosteriorMean)</code></pre>
        title = &quot;Binomial ASH estimate (unfiltered data)&quot;) +
   coord_fixed(ratio = 1)</code></pre>
 <p><img src="figure/bulk_single.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-14-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/5a0352da23c84e1cedf52054b04979694493ed8f/docs/figure/bulk_single.Rmd/unnamed-chunk-14-1.png" target="_blank">5a0352d</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-07
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
