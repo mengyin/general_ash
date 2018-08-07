@@ -74,7 +74,7 @@ ggplot(data.frame(mn = with(counts_filtered, counts_bulk/(counts_bulk + counts_s
        title = "Histogram of ML estimates (unfiltered data)")
 ```
 
-## Method 1
+## Method 1: beta-binomial model
 
 Here we follow the methods in this [blog post](http://varianceexplained.org/r/empirical_bayes_baseball/).
 

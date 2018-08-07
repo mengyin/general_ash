@@ -14,4 +14,4 @@ ASH with log-F likelihood (FASH):
 
 ASH with binomial likelihood:
 
-- [Use binomial ASH to compare bulk RNA-seq vs scRNA-seq data](bulk_single.html)
+- [Use binomial ASH to compare bulk RNA-seq vs scRNA-seq data.](bulk_single.html)
