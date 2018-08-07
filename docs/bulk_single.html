@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Mengyin Lu" />
+
+<meta name="date" content="2018-08-07" />
+
+<title>Use binomial ASH to compare bulk RNA-seq vs scRNA-seq data</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.0.13/css/fa-svg-with-js.css" rel="stylesheet" />
+<script src="site_libs/font-awesome-5.0.13/js/fontawesome-all.min.js"></script>
+<script src="site_libs/font-awesome-5.0.13/js/fa-v4-shims.min.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">general_ash</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jdblischak/workflowr">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Use binomial ASH to compare bulk RNA-seq vs scRNA-seq data</h1>
+<h4 class="author"><em>Mengyin Lu</em></h4>
+<h4 class="date"><em>2018-08-07</em></h4>
+
+</div>
+
+
+<p><strong>Last updated:</strong> 2018-08-07</p>
+<strong>workflowr checks:</strong> <small>(Click a bullet for more information)</small>
+<ul>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>R Markdown file:</strong> up-to-date </summary></p>
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Environment:</strong> empty </summary></p>
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(20180705)</code> </summary></p>
+<p>The command <code>set.seed(20180705)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Session information:</strong> recorded </summary></p>
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/mengyin/general_ash/tree/f474e9b0b05a35231e3afa1213d0857d468fcd6e" target="_blank">f474e9b</a> </summary></p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+<pre><code>
+Ignored files:
+    Ignored:    analysis/._index.Rmd
+    Ignored:    analysis/stem_cache/
+    Ignored:    data/._annotation.txt
+    Ignored:    data/._molecules.txt
+    Ignored:    data/._reads-bulk.txt
+
+Untracked files:
+    Untracked:  data/annotation.txt
+    Untracked:  data/molecules.txt
+    Untracked:  data/reads-bulk.txt
+
+</code></pre>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes. </details>
+</li>
+</ul>
+<details> <summary> <small><strong>Expand here to see past versions:</strong></small> </summary>
+<ul>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+File
+</th>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+<th style="text-align:left;">
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/f474e9b0b05a35231e3afa1213d0857d468fcd6e/analysis/bulk_single.Rmd" target="_blank">f474e9b</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-07
+</td>
+<td style="text-align:left;">
+add bulk single-cell RNA-seq comparison
+</td>
+</tr>
+</tbody>
+</table>
+</ul>
+<p></details></p>
+<hr />
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>The purpose of this document was to perform quantitative assessment of the difference between the counts of gene <span class="math inline">\(g\)</span> in single cell data and the counts of gene <span class="math inline">\(g\)</span> in bulk data. See <a href="https://stephens999.github.io/singlecell-ideas/bulk-vs-single.html">here</a> for Matthew’s formulation of the problem.</p>
+<p>The challenge here is that for each gene <span class="math inline">\(g\)</span>, the total counts <span class="math inline">\(C_g = X_g^s + X_g^b\)</span> may be too big or too small by chance. We apply two approaches that can account for this uncertainty.</p>
+</div>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<p>We use the data from <a href="https://www.nature.com/articles/srep39921">Tung et al</a>. The data files are available <a href="https://github.com/jdblischak/singleCellSeq">here</a>.</p>
+<pre class="r"><code>library(tidyr)
+library(dplyr)</code></pre>
+<pre><code>Warning: package &#39;dplyr&#39; was built under R version 3.5.1</code></pre>
+<pre><code>
+Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>The following objects are masked from &#39;package:stats&#39;:
+
+    filter, lag</code></pre>
+<pre><code>The following objects are masked from &#39;package:base&#39;:
+
+    intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>anno &lt;- read.table(&quot;data/annotation.txt&quot;, header = TRUE,
+                   stringsAsFactors = FALSE)
+molecules &lt;- read.table(&quot;data/molecules.txt&quot;, header = TRUE,
+                    stringsAsFactors = FALSE)
+reads_bulk &lt;- read.table(&quot;data/reads-bulk.txt&quot;, header = TRUE, stringsAsFactors = FALSE)</code></pre>
+<p>We take one replicate for now: NA19101.r1.</p>
+<pre class="r"><code>molecules_19101_r1 &lt;- molecules[ ,anno$batch == &quot;NA19101.r1&quot;]
+reads_bulk_19101_r1 &lt;- reads_bulk[ ,grep(&quot;NA19101.r1&quot;, colnames(reads_bulk))]
+# Let&#39;s compute for the single cell data, the counts of gene $g$ across all the individual cells. </code></pre>
+<p>Compute <span class="math inline">\(X_g^{b}\)</span> and <span class="math inline">\(X_g^s\)</span>:</p>
+<pre class="r"><code>counts_single &lt;- rowSums(molecules_19101_r1)
+counts_bulk &lt;- reads_bulk_19101_r1
+
+all.equal(rownames(counts_bulk), rownames(counts_single))</code></pre>
+<pre><code>[1] TRUE</code></pre>
+<pre class="r"><code>counts &lt;- data.frame(counts_single, counts_bulk)
+row.names(counts) &lt;- row.names(molecules_19101_r1)
+counts &lt;- counts[which(rowSums(counts)&gt;0),]
+dim(counts)</code></pre>
+<pre><code>[1] 17429     2</code></pre>
+<p>Compute the ML estimates <span class="math inline">\(\hat{p}_g=X_g^{b}/(X_g^{b}+X_g^{s})\)</span>. We also form a filtered subset which removes genes with all zero bulk reads or all zero single cell reads.</p>
+<pre class="r"><code>counts$total &lt;- counts$counts_bulk + counts$counts_single
+counts$mn &lt;- counts$counts_bulk/counts$total
+
+library(tibble) 
+counts_filtered &lt;- counts %&gt;% rownames_to_column(&#39;gene&#39;) %&gt;% 
+  filter(!(mn == 0 | mn == 1)) %&gt;% column_to_rownames(&#39;gene&#39;)</code></pre>
+<p>Plot the ML estimate <span class="math inline">\(\hat{p}_g = X_g^s / (X_g^s + X_g^b)\)</span>.</p>
+<pre class="r"><code>library(ggplot2)
+ggplot(data.frame(mn = with(counts, counts_bulk/(counts_bulk + counts_single))),
+       aes(x = mn)) + geom_histogram(bins = 40)+
+  labs(x = &quot;ML estimate&quot;, y = &quot;Frequency&quot;,
+       title = &quot;Histogram of ML estimates (unfiltered data)&quot;)</code></pre>
+<p><img src="figure/bulk_single.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(data.frame(mn = with(counts_filtered, counts_bulk/(counts_bulk + counts_single))),
+       aes(x = mn)) + geom_histogram(bins = 40)+
+  labs(x = &quot;ML estimate&quot;, y = &quot;Frequency&quot;,
+       title = &quot;Histogram of ML estimates (unfiltered data)&quot;)</code></pre>
+<p><img src="figure/bulk_single.Rmd/unnamed-chunk-5-2.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="method-1" class="section level2">
+<h2>Method 1</h2>
+<p>Here we follow the methods in this <a href="http://varianceexplained.org/r/empirical_bayes_baseball/">blog post</a>.</p>
+<p>Use <code>optim</code> to find beta prior parameters.</p>
+<pre class="r"><code>loglik &lt;- function(mu, x) { 
+    sum(-dbeta(x,mu[1],mu[2],log = TRUE)) 
+    } 
+ 
+fit_optim &lt;- optim(par = c(30,20), fn = loglik,
+                   x = counts_filtered$mn, 
+                   method = &quot;L-BFGS-B&quot;, lower=c(0,0))
+fit_optim</code></pre>
+<pre><code>$par
+[1] 5.436891 1.845051
+
+$value
+[1] -8622.246
+
+$counts
+function gradient 
+      16       16 
+
+$convergence
+[1] 0
+
+$message
+[1] &quot;CONVERGENCE: REL_REDUCTION_OF_F &lt;= FACTR*EPSMCH&quot;</code></pre>
+<pre class="r"><code>ggplot() +
+  geom_histogram(data = counts_filtered, aes(x = mn, y = ..density..), bins = 40) +
+  geom_density(data = data.frame(x = rbeta(100, fit_optim$par[1], fit_optim$par[2])), 
+               aes (x = x), color = &quot;blue&quot;)</code></pre>
+<p><img src="figure/bulk_single.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Compute posterior mean.</p>
+<pre class="r"><code>alpha0 &lt;- fit_optim$par[1]
+beta0 &lt;- fit_optim$par[2]
+counts_eb &lt;- counts_filtered %&gt;%
+  mutate(eb_estimate = (counts_bulk + alpha0)/(counts_single + counts_bulk + alpha0 + beta0))</code></pre>
+<p>Plot <span class="math inline">\(p\)</span> estimates.</p>
+<pre class="r"><code>counts_eb %&gt;%
+  ggplot(aes(mn, eb_estimate)) +
+  geom_point(aes(colour = counts_bulk), colour = &quot;black&quot;) +
+  geom_vline(xintercept = .5, colour = &quot;blue&quot;, lty = 3) + 
+  geom_hline(yintercept = .5, colour = &quot;blue&quot;, lty = 2) +
+  geom_abline(intercept = 0, slope = 1, colour = &quot;blue&quot;) +
+  labs(x = &quot;ML estimate&quot;, y = &quot;Posterior mean&quot;,
+       title = &quot;Beta prior, empirical bayes estimate (filtered data)&quot;) +
+  coord_fixed(ratio = 1)</code></pre>
+<p><img src="figure/bulk_single.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="method-2-binomial-ash" class="section level2">
+<h2>Method 2: binomial ASH</h2>
+<p>Suppose the bulk data and single cell data are independent, we have <span class="math inline">\(X_g^b\sim Bin(X_g^b+X_g^s, p_g)\)</span>. We use the binomial ASH to estimate <span class="math inline">\(p_g\)</span>: assuming that <span class="math inline">\(p_g\)</span> comes from a unimodal prior, the posterior mean of <span class="math inline">\(p_g\)</span> is used to estimate <span class="math inline">\(p_g\)</span>.</p>
+<p>Applying to filtered data:</p>
+<pre class="r"><code>library(ashr)
+ngenes &lt;- dim(counts_filtered)[1]
+
+fit_filter &lt;- ash.workhorse(rep(0, ngenes), 
+                               1, 
+                               lik = lik_binom(counts_filtered$counts_bulk, 
+                                               counts_filtered$total),
+                               mixcompdist = &quot;halfuniform&quot;, prior=&quot;uniform&quot;)
+summary(fit_filter$result$PosteriorMean)</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.02128 0.73072 0.79917 0.77455 0.85764 0.98473 </code></pre>
+<p>Fitted binomial ASH prior density:</p>
+<pre class="r"><code># plot density of an unimix object g on x
+dens_unimix = function(g, x){
+  sapply(x, dens_unimix_sing, pi=g$pi, a=g$a, b=g$b)
+}
+
+dens_unimix_sing = function(x,pi,a,b){
+  sum((x&gt;=a &amp; x&lt;b)/(b-a)*pi,na.rm=TRUE)
+}
+
+x &lt;- seq(0,1,by=0.001)
+g &lt;- fit_filter$fitted_g
+dens_uni &lt;- dens_unimix(g, x)
+pointmass &lt;- data.frame(point = g$a[g$a==g$b],
+                        mass = g$pi[g$a==g$b])
+
+hist(counts_filtered$mn,100,prob=TRUE,col=rgb(0,1,0,0.5),ylim=c(0,5),
+     xlab=&quot;p&quot;,main=&quot;Histogram of MLE and ash posterior mean for p (filterd data)&quot;)
+hist(fit_filter$result$PosteriorMean, 100, prob=TRUE,
+     xlim=c(0,1), col=rgb(0,0,1,0.5), add=T)
+lines(x, dens_uni, type=&quot;l&quot;,col=&quot;red&quot;,lwd=2)
+legend(&quot;topleft&quot;, legend=c(&quot;MLE&quot;,&quot;ash posterior mean&quot;,&quot;ash fitted prior&quot;), col=c(rgb(0,1,0,0.5),rgb(0,0,1,0.5),2), pt.cex=2, pch=15 )</code></pre>
+<p><img src="figure/bulk_single.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Fitted prior mode: 0.7623608.</p>
+<p>Plot binomial ASH <span class="math inline">\(p\)</span> estimates vs the ML estimates <span class="math inline">\(\hat{p}\)</span>.</p>
+<pre class="r"><code>counts_filtered %&gt;% 
+  mutate(posterior_mean = fit_filter$result$PosteriorMean) %&gt;%
+  ggplot(aes(mn, posterior_mean)) +
+  geom_point(aes(colour = counts_bulk), colour = &quot;black&quot;) +
+  geom_vline(xintercept = .5, colour = &quot;blue&quot;, lty = 3) + 
+  geom_hline(yintercept = .5, colour = &quot;blue&quot;, lty = 2) +
+  geom_abline(intercept = 0, slope = 1, colour = &quot;blue&quot;) +
+  labs(x = &quot;ML estimate&quot;, y = &quot;Posterior mean&quot;,
+       title = &quot;Binomial ASH estimate (filtered data)&quot;) +
+  coord_fixed(ratio = 1)</code></pre>
+<p><img src="figure/bulk_single.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Genes with smallest/largest posterior mean of <span class="math inline">\(p_g\)</span>:</p>
+<pre class="r"><code>counts_filtered$postmean &lt;- fit_filter$result$PosteriorMean
+
+# genes with smallest posterior mean
+counts_filtered[order(counts_filtered$postmean)[1:10],]</code></pre>
+<pre><code>                counts_single counts_bulk total         mn   postmean
+ERCC-00095                137           2   139 0.01438849 0.02127660
+ERCC-00059                 82           1    83 0.01204819 0.02352942
+ENSG00000182463            64           1    65 0.01538462 0.02985102
+ENSG00000198558           144           4   148 0.02702703 0.03333333
+ENSG00000270672           433          16   449 0.03563474 0.03769401
+ERCC-00112                280          12   292 0.04109589 0.04421769
+ENSG00000256222           193           8   201 0.03980100 0.04433498
+ENSG00000232196            60           2    62 0.03225806 0.04687989
+ENSG00000256045           930          45   975 0.04615385 0.04708291
+ENSG00000270188           135           6   141 0.04255319 0.04895105</code></pre>
+<pre class="r"><code># genes with largest posterior mean
+counts_filtered[order(counts_filtered$postmean,decreasing=TRUE)[1:10],]</code></pre>
+<pre><code>                counts_single counts_bulk  total        mn  postmean
+ENSG00000248098            23        1547   1570 0.9853503 0.9847328
+ENSG00000146955             3         241    244 0.9877049 0.9776288
+ENSG00000258947           110        4264   4374 0.9748514 0.9746344
+ENSG00000125730             3         223    226 0.9867257 0.9724975
+ENSG00000167774             9         389    398 0.9773869 0.9647538
+ENSG00000087086         12709      344971 357680 0.9644682 0.9644656
+ENSG00000111669          6204      163570 169774 0.9634573 0.9634518
+ENSG00000104835            48        1404   1452 0.9669421 0.9621675
+ENSG00000052344           210        5264   5474 0.9616368 0.9608300
+ENSG00000075624         17904      410813 428717 0.9582382 0.9582360</code></pre>
+<p>Applying to unfiltered data:</p>
+<pre class="r"><code>ngenes &lt;- dim(counts)[1]
+counts$total &lt;- counts$counts_single+counts$counts_bulk
+
+fit_unfilter &lt;- ash.workhorse(rep(0, ngenes), 1,
+                              lik = lik_binom(counts$counts_bulk,counts$total),
+                              mixcompdist = &quot;halfuniform&quot;, prior=&quot;uniform&quot;)
+summary(fit_unfilter$result$PosteriorMean)</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.01087 0.71278 0.79505 0.75710 0.85270 0.99326 </code></pre>
+<p>Plot binomial ASH <span class="math inline">\(p\)</span> estimates vs the ML estimates <span class="math inline">\(\hat{p}\)</span>.</p>
+<pre class="r"><code>counts %&gt;% 
+  mutate(posterior_mean = fit_unfilter$result$PosteriorMean) %&gt;%
+  ggplot(aes(mn, posterior_mean)) +
+  geom_point(aes(colour = counts_bulk), colour = &quot;black&quot;) +
+  geom_vline(xintercept = .5, colour = &quot;blue&quot;, lty = 3) + 
+  geom_hline(yintercept = .5, colour = &quot;blue&quot;, lty = 2) +
+  geom_abline(intercept = 0, slope = 1, colour = &quot;blue&quot;) +
+  labs(x = &quot;ML estimate&quot;, y = &quot;Posterior mean&quot;,
+       title = &quot;Binomial ASH estimate (unfiltered data)&quot;) +
+  coord_fixed(ratio = 1)</code></pre>
+<p><img src="figure/bulk_single.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="session-information" class="section level2">
+<h2>Session information</h2>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.5.0 (2018-04-23)
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+Running under: macOS High Sierra 10.13.3
+
+Matrix products: default
+BLAS: /Library/Frameworks/R.framework/Versions/3.5/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/3.5/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] ashr_2.2-8     ggplot2_3.0.0  bindrcpp_0.2.2 tibble_1.4.2  
+[5] dplyr_0.7.6    tidyr_0.8.1   
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_0.12.18      pillar_1.3.0      compiler_3.5.0   
+ [4] git2r_0.23.0      plyr_1.8.4        workflowr_1.1.1  
+ [7] bindr_0.1.1       iterators_1.0.10  R.methodsS3_1.7.1
+[10] R.utils_2.6.0     tools_3.5.0       digest_0.6.15    
+[13] lattice_0.20-35   evaluate_0.11     gtable_0.2.0     
+[16] pkgconfig_2.0.1   rlang_0.2.1       foreach_1.4.4    
+[19] Matrix_1.2-14     rstudioapi_0.7    parallel_3.5.0   
+[22] yaml_2.2.0        withr_2.1.2       stringr_1.3.1    
+[25] knitr_1.20        rprojroot_1.3-2   grid_3.5.0       
+[28] tidyselect_0.2.4  glue_1.3.0        R6_2.2.2         
+[31] rmarkdown_1.10    purrr_0.2.5       magrittr_1.5     
+[34] whisker_0.3-2     MASS_7.3-50       codetools_0.2-15 
+[37] backports_1.1.2   scales_0.5.0      htmltools_0.3.6  
+[40] assertthat_0.2.0  colorspace_1.3-2  labeling_0.3     
+[43] stringi_1.2.4     pscl_1.5.2        doParallel_1.0.11
+[46] lazyeval_0.2.1    munsell_0.5.0     truncnorm_1.0-8  
+[49] SQUAREM_2017.10-1 crayon_1.3.4      R.oo_1.22.0      </code></pre>
+</div>
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+<hr>
+<p>
+  This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a>
+  analysis was created with
+  <a href="https://github.com/jdblischak/workflowr">workflowr</a> 1.1.1
+</p>
+<hr>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
