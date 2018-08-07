@@ -11,7 +11,7 @@
 
 
 
-<title>Home</title>
+<title>General Adaptive Shrinkage (ASH) Application Examples</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -216,12 +216,12 @@ div.section {
 
 
 
-<h1 class="title toc-ignore">Home</h1>
+<h1 class="title toc-ignore">General Adaptive Shrinkage (ASH) Application Examples</h1>
 
 </div>
 
 
-<p><strong>Last updated:</strong> 2018-07-05</p>
+<p><strong>Last updated:</strong> 2018-08-07</p>
 <strong>workflowr checks:</strong> <small>(Click a bullet for more information)</small>
 <ul>
 <li>
@@ -230,10 +230,15 @@ div.section {
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> 7cbc481 </summary></p>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/mengyin/general_ash/tree/92644611d4a57984a9dd47c97ce9d1ae75d04440" target="_blank">9264461</a> </summary></p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 <pre><code>
-working directory clean
+Ignored files:
+    Ignored:    analysis/stem_cache/
+
+Untracked files:
+    Untracked:  docs/figure/
+
 </code></pre>
 Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes. </details>
 </li>
@@ -266,7 +271,41 @@ Message
 Rmd
 </td>
 <td style="text-align:left;">
-7cbc481
+<a href="https://github.com/mengyin/general_ash/blob/92644611d4a57984a9dd47c97ce9d1ae75d04440/analysis/index.Rmd" target="_blank">9264461</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-07
+</td>
+<td style="text-align:left;">
+Add stem data analysis using FASH
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/mengyin/general_ash/51440cff66cbd83d867eece4d77d3741ec589be9/docs/index.html" target="_blank">51440cf</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-07-05
+</td>
+<td style="text-align:left;">
+Build site.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/7cbc481b714830cb095137b9e91d492e3628d565/analysis/index.Rmd" target="_blank">7cbc481</a>
 </td>
 <td style="text-align:left;">
 mengyin
@@ -283,7 +322,10 @@ Start workflowr project.
 </ul>
 <p></details></p>
 <hr />
-<p>Welcome to my research website.</p>
+<p>Here are some application examples for general ASH.</p>
+<ul>
+<li><a href="stem.html">Use FASH to analyze the stem cell gene expression data (Burrows data).</a></li>
+</ul>
 
 <!-- Adjust MathJax settings so that all math formulae are shown using
 TeX fonts only; see
@@ -301,7 +343,7 @@ footer is added to webpages before the MathJax javascript. -->
 <p>
   This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a>
   analysis was created with
-  <a href="https://github.com/jdblischak/workflowr">workflowr</a> 1.1.0
+  <a href="https://github.com/jdblischak/workflowr">workflowr</a> 1.1.1
 </p>
 <hr>
 
