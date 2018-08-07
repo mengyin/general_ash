@@ -327,8 +327,7 @@ div.section {
 <strong>workflowr checks:</strong> <small>(Click a bullet for more information)</small>
 <ul>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>R Markdown file:</strong> up-to-date </summary></p>
-<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+<p><details> <summary> <strong style="color:red;">✖</strong> <strong>R Markdown file:</strong> uncommitted changes </summary> The R Markdown file has unstaged changes. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
 </details>
 </li>
 <li>
@@ -347,12 +346,15 @@ div.section {
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/mengyin/general_ash/tree/92644611d4a57984a9dd47c97ce9d1ae75d04440" target="_blank">9264461</a> </summary></p>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/mengyin/general_ash/tree/7836ca3351a4995f184bd7b25a0f64537658dc29" target="_blank">7836ca3</a> </summary></p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 <pre><code>
 Ignored files:
+    Ignored:    analysis/._index.Rmd
     Ignored:    analysis/stem_cache/
-    Ignored:    docs/figure/
+
+Unstaged changes:
+    Modified:   analysis/stem.Rmd
 
 </code></pre>
 Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes. </details>
@@ -381,6 +383,23 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/mengyin/general_ash/7836ca3351a4995f184bd7b25a0f64537658dc29/docs/stem.html" target="_blank">7836ca3</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-07
+</td>
+<td style="text-align:left;">
+Build site.
+</td>
+</tr>
 <tr>
 <td style="text-align:left;">
 Rmd
@@ -542,15 +561,42 @@ ENSG00000198825        7.115315      7.044821    7.757269      7.045194
                 Ind1.L.iPSC.B Ind4.L.iPSC.B Ind3.L.iPSC.C Ind4.F.iPSC
 ENSG00000198825      6.969298      6.974893      7.049418    7.896776</code></pre>
 <p>For this gene, individual 2 L-iPSC replicate B’s gene expression level is much higher (&gt;1.4) than that of replicates A and C. Compared to the typical gene expression variation within L-iPSC replicates, this seems somewhat suspicious…?</p>
-<pre class="r"><code>hist(apply(geneexp[,c(&quot;Ind2.L.iPSC.A&quot;,&quot;Ind2.L.iPSC.B&quot;,&quot;Ind2.L.iPSC.C&quot;)],1,sd), 10,
+<pre class="r"><code>hist(apply(geneexp[,c(&quot;Ind2.L.iPSC.A&quot;,&quot;Ind2.L.iPSC.B&quot;,&quot;Ind2.L.iPSC.C&quot;)],1,sd), 30,
      xlab=&quot;sd of replicates A-C for ind2&quot;,
      main=&quot;Histogram of sd&quot;)</code></pre>
 <p><img src="figure/stem.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-4-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/7836ca3351a4995f184bd7b25a0f64537658dc29/docs/figure/stem.Rmd/unnamed-chunk-4-1.png" target="_blank">7836ca3</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-07
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 </div>
 <div id="session-information" class="section level2">
-<h2>Session Information</h2>
-</div>
-<div id="session-information-1" class="section level2">
 <h2>Session information</h2>
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>R version 3.5.0 (2018-04-23)

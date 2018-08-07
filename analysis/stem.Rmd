@@ -102,7 +102,7 @@ pve_analysis = function(data){
 
 Note that this dataset has unbalanced design (three L-iPSC replicates but just one F-iPSC sample for each individual). However it is not straightforward to use FASH on unbalanced dataset for PVE analysis. Hence we choose an ad-hoc way: each time we simply use one of the three L-iPSC replicates to form a balanced dataset, and compare the results of three trials. Fortunately the three trials give very similar results. 
 
-```{r,message=FALSE,warning=FALSE,cache=TRUE}
+```{r,message=FALSE,warning=FALSE,cache=FALSE}
 # load data
 geneexp = read.delim("data/OriginGeneExpression_Normalized.txt")
 
@@ -148,13 +148,8 @@ geneexp[which.max(A$pve.ct.fash),]
 
 For this gene, individual 2 L-iPSC replicate B's gene expression level is much higher (>1.4) than that of replicates A and C. Compared to the typical gene expression variation within L-iPSC replicates, this seems somewhat suspicious...?
 ```{r}
-hist(apply(geneexp[,c("Ind2.L.iPSC.A","Ind2.L.iPSC.B","Ind2.L.iPSC.C")],1,sd), 10,
+hist(apply(geneexp[,c("Ind2.L.iPSC.A","Ind2.L.iPSC.B","Ind2.L.iPSC.C")],1,sd), 30,
      xlab="sd of replicates A-C for ind2",
      main="Histogram of sd")
-```
-
-## Session Information
-
-```{r session-info}
 ```
 
