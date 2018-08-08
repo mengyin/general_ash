@@ -9,9 +9,11 @@
 <meta name="generator" content="pandoc" />
 
 
+<meta name="author" content="Mengyin Lu" />
 
+<meta name="date" content="2018-08-08" />
 
-<title>General Adaptive Shrinkage (ASH) Models and Examples</title>
+<title>Gene expression distribution deconvolution on Tung Data</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,6 +21,9 @@
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
@@ -169,6 +174,101 @@ $(document).ready(function () {
 
 
 
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
 
 
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
@@ -216,7 +316,9 @@ div.section {
 
 
 
-<h1 class="title toc-ignore">General Adaptive Shrinkage (ASH) Models and Examples</h1>
+<h1 class="title toc-ignore">Gene expression distribution deconvolution on Tung Data</h1>
+<h4 class="author"><em>Mengyin Lu</em></h4>
+<h4 class="date"><em>2018-08-08</em></h4>
 
 </div>
 
@@ -227,6 +329,21 @@ div.section {
 <li>
 <p><details> <summary> <strong style="color:blue;">✔</strong> <strong>R Markdown file:</strong> up-to-date </summary></p>
 <p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Environment:</strong> empty </summary></p>
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(20180705)</code> </summary></p>
+<p>The command <code>set.seed(20180705)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Session information:</strong> recorded </summary></p>
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
 </details>
 </li>
 <li>
@@ -248,7 +365,6 @@ Untracked files:
     Untracked:  code/deconvolution.R
     Untracked:  data/BuettnerG2M.Rdata
     Untracked:  data/zeisel.rds
-    Untracked:  docs/figure/tung.Rmd/
     Untracked:  docs/genash.pdf
     Untracked:  docs/sc.pdf
     Untracked:  output/res_tung.rds
@@ -285,7 +401,7 @@ Message
 Rmd
 </td>
 <td style="text-align:left;">
-<a href="https://github.com/mengyin/general_ash/blob/aca3fa6ffd09cd31492dce90c7b011583f2e6858/analysis/index.Rmd" target="_blank">aca3fa6</a>
+<a href="https://github.com/mengyin/general_ash/blob/aca3fa6ffd09cd31492dce90c7b011583f2e6858/analysis/tung.Rmd" target="_blank">aca3fa6</a>
 </td>
 <td style="text-align:left;">
 mengyin
@@ -297,157 +413,95 @@ mengyin
 add Tung data analysis
 </td>
 </tr>
-<tr>
-<td style="text-align:left;">
-html
-</td>
-<td style="text-align:left;">
-<a href="https://cdn.rawgit.com/mengyin/general_ash/fbc6e15d2c4eee0d2e4b75b4107e88b8c31b35f6/docs/index.html" target="_blank">fbc6e15</a>
-</td>
-<td style="text-align:left;">
-mengyin
-</td>
-<td style="text-align:left;">
-2018-08-07
-</td>
-<td style="text-align:left;">
-Build site.
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Rmd
-</td>
-<td style="text-align:left;">
-<a href="https://github.com/mengyin/general_ash/blob/f41c8e1d5a0d38388ff499dbff5e37d3281b9569/analysis/index.Rmd" target="_blank">f41c8e1</a>
-</td>
-<td style="text-align:left;">
-mengyin
-</td>
-<td style="text-align:left;">
-2018-08-07
-</td>
-<td style="text-align:left;">
-edit bulk vs single analysis
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-html
-</td>
-<td style="text-align:left;">
-<a href="https://cdn.rawgit.com/mengyin/general_ash/5a0352da23c84e1cedf52054b04979694493ed8f/docs/index.html" target="_blank">5a0352d</a>
-</td>
-<td style="text-align:left;">
-mengyin
-</td>
-<td style="text-align:left;">
-2018-08-07
-</td>
-<td style="text-align:left;">
-Build site.
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Rmd
-</td>
-<td style="text-align:left;">
-<a href="https://github.com/mengyin/general_ash/blob/f474e9b0b05a35231e3afa1213d0857d468fcd6e/analysis/index.Rmd" target="_blank">f474e9b</a>
-</td>
-<td style="text-align:left;">
-mengyin
-</td>
-<td style="text-align:left;">
-2018-08-07
-</td>
-<td style="text-align:left;">
-add bulk single-cell RNA-seq comparison
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-html
-</td>
-<td style="text-align:left;">
-<a href="https://cdn.rawgit.com/mengyin/general_ash/7836ca3351a4995f184bd7b25a0f64537658dc29/docs/index.html" target="_blank">7836ca3</a>
-</td>
-<td style="text-align:left;">
-mengyin
-</td>
-<td style="text-align:left;">
-2018-08-07
-</td>
-<td style="text-align:left;">
-Build site.
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Rmd
-</td>
-<td style="text-align:left;">
-<a href="https://github.com/mengyin/general_ash/blob/92644611d4a57984a9dd47c97ce9d1ae75d04440/analysis/index.Rmd" target="_blank">9264461</a>
-</td>
-<td style="text-align:left;">
-mengyin
-</td>
-<td style="text-align:left;">
-2018-08-07
-</td>
-<td style="text-align:left;">
-Add stem data analysis using FASH
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-html
-</td>
-<td style="text-align:left;">
-<a href="https://cdn.rawgit.com/mengyin/general_ash/51440cff66cbd83d867eece4d77d3741ec589be9/docs/index.html" target="_blank">51440cf</a>
-</td>
-<td style="text-align:left;">
-mengyin
-</td>
-<td style="text-align:left;">
-2018-07-05
-</td>
-<td style="text-align:left;">
-Build site.
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Rmd
-</td>
-<td style="text-align:left;">
-<a href="https://github.com/mengyin/general_ash/blob/7cbc481b714830cb095137b9e91d492e3628d565/analysis/index.Rmd" target="_blank">7cbc481</a>
-</td>
-<td style="text-align:left;">
-mengyin
-</td>
-<td style="text-align:left;">
-2018-07-05
-</td>
-<td style="text-align:left;">
-Start workflowr project.
-</td>
-</tr>
 </tbody>
 </table>
 </ul>
 <p></details></p>
 <hr />
-<p><a href="genash.pdf">Models and methods</a>.</p>
-<p>Application examples:</p>
-<ul>
-<li><p>ASH with log-F likelihood (FASH): <a href="stem.html">Use FASH to analyze the stem cell gene expression data (Burrows data).</a></p></li>
-<li><p>ASH with binomial likelihood: <a href="bulk_single.html">Use binomial ASH to compare bulk RNA-seq vs scRNA-seq data.</a></p></li>
-<li><p>ASH with Poisson likelihood: <a href="sc.pdf">Gene expression distribution deconvolution for scRNA-seq data</a>.</p>
-<ul>
-<li><a href="tung.html">Data analysis on Tung data.</a></li>
-</ul></li>
-</ul>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<p>The scRNA-seq data in <a href="https://www.nature.com/articles/srep39921">Tung et al</a> have three C1 replicates from three human induced pluripotent stem cell lines and UMI were added to all samples. One replicate of the individual NA19098.r2 was removed from the data due to low quality and 564 cells are kept after filtering. The dataset is publicly available <a href="https://github.com/jdblischak/singleCellSeq">here</a>. Each replicate is a batch with less than 100 cells. Unlike the Zeisel data, the sample size of Tung data is relatively small. We run DESCEND and Poisson ASH on one replicate NA19091.r2 (96 cells in total) and compare their results on this dataset with a limited number of cells.</p>
+<p>Load the data:</p>
+<pre class="r"><code>anno &lt;- read.table(&quot;data/annotation.txt&quot;, header = TRUE,stringsAsFactors = FALSE)
+molecules &lt;- read.table(&quot;data/molecules.txt&quot;, header = TRUE,stringsAsFactors = FALSE)
+
+# UMI count matrix for replicate NA19101.r2
+mol_19101_r2 &lt;- molecules[ ,anno$batch == &quot;NA19101.r2&quot;]
+
+# dimension of subset
+dim(mol_19101_r2)</code></pre>
+<pre><code>[1] 19027    96</code></pre>
+<p>For each sample <span class="math inline">\(c\)</span>, we compute the scaling factors <span class="math inline">\(\alpha_c\)</span> as the normalized library sizes:</p>
+<pre class="r"><code># library size
+libsize_19101_r2  = colSums(mol_19101_r2)  
+
+# normalized library size
+scale_19101_r2  = libsize_19101_r2 /mean(libsize_19101_r2)  </code></pre>
+</div>
+<div id="run-deconvolution-methods" class="section level2">
+<h2>Run deconvolution methods</h2>
+<p>We run DESCEND, Poisson ASH and nonparametric deconvolution for each gene.</p>
+<pre class="r"><code>source(&quot;code/deconvolution.R&quot;)
+res_19101_r2 = deconv_data(mol_19101_r2)
+saveRDS(res_19101_r2, file=&quot;output/res_tung.rds&quot;)</code></pre>
+</div>
+<div id="results" class="section level2">
+<h2>Results</h2>
+<p>We compare the properties (mean, CV, <span class="math inline">\(\pi_0\)</span>) of fitted prior <span class="math inline">\(\hat{G}\)</span> by DESCEND and Poisson ASH.</p>
+<pre class="r"><code>res_19101_r2 = readRDS(&quot;output/res_tung.rds&quot;)
+
+# compobs: genes that total UMI count under 5
+compobs = (rowSums(mol_19101_r2&gt;0)&gt;=5)
+
+# compare prior mean
+cor(log(res_19101_r2$mean_ash), log(res_19101_r2$mean_descend), use=&quot;complete.obs&quot;)</code></pre>
+<pre><code>[1] 0.9999762</code></pre>
+<pre class="r"><code>plot(log(res_19101_r2$mean_ash), log(res_19101_r2$mean_descend),
+     xlab=&quot;Poisson ash&quot;, ylab=&quot;DESCEND&quot;, main=&quot;Mean of G (log-log scale)&quot;,
+     xlim=c(-7,7),ylim=c(-7,7))
+abline(0,1,col=2)</code></pre>
+<p><img src="figure/tung.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># compare prior CV (on compobs)
+cor(res_19101_r2$cv_ash[compobs], res_19101_r2$cv_descend[compobs], use=&quot;complete.obs&quot;)</code></pre>
+<pre><code>[1] 0.966626</code></pre>
+<pre class="r"><code>plot(res_19101_r2$cv_ash[compobs], res_19101_r2$cv_descend[compobs],
+     xlab=&quot;Poisson ash&quot;, ylab=&quot;DESCEND&quot;, main=&quot;CV of G&quot;,
+     xlim=c(0,4),ylim=c(0,4))
+abline(0,1,col=2)</code></pre>
+<p><img src="figure/tung.Rmd/unnamed-chunk-4-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># compare prior pi0
+plot(res_19101_r2$pi0_ash, res_19101_r2$pi0_descend,
+     xlab=&quot;Poisson ash&quot;, ylab=&quot;DESCEND&quot;, main=&quot;Null proportion of G&quot;,
+     xlim=c(0,1),ylim=c(0,1))
+abline(0,1,col=2)</code></pre>
+<p><img src="figure/tung.Rmd/unnamed-chunk-4-3.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="session-information" class="section level2">
+<h2>Session information</h2>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.5.0 (2018-04-23)
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+Running under: macOS High Sierra 10.13.3
+
+Matrix products: default
+BLAS: /Library/Frameworks/R.framework/Versions/3.5/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/3.5/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+loaded via a namespace (and not attached):
+ [1] workflowr_1.1.1   Rcpp_0.12.18      digest_0.6.15    
+ [4] rprojroot_1.3-2   R.methodsS3_1.7.1 backports_1.1.2  
+ [7] git2r_0.23.0      magrittr_1.5      evaluate_0.11    
+[10] stringi_1.2.4     whisker_0.3-2     R.oo_1.22.0      
+[13] R.utils_2.6.0     rmarkdown_1.10    tools_3.5.0      
+[16] stringr_1.3.1     yaml_2.2.0        compiler_3.5.0   
+[19] htmltools_0.3.6   knitr_1.20       </code></pre>
+</div>
 
 <!-- Adjust MathJax settings so that all math formulae are shown using
 TeX fonts only; see
@@ -470,6 +524,8 @@ footer is added to webpages before the MathJax javascript. -->
 <hr>
 
 
+</div>
+</div>
 
 </div>
 
