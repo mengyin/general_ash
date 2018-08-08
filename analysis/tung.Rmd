@@ -1,0 +1,78 @@
+---
+title: "Gene expression distribution deconvolution on Tung Data"
+author: "Mengyin Lu"
+date: "2018-08-08"
+output: workflowr::wflow_html
+---
+
+## Data
+
+The scRNA-seq data in [Tung et al](https://www.nature.com/articles/srep39921) have three C1 replicates from three human induced pluripotent stem cell lines and UMI were added to all samples. One replicate of the individual NA19098.r2 was removed from the data due to low quality and 564 cells are kept after filtering. The dataset is publicly available [here](https://github.com/jdblischak/singleCellSeq). Each replicate is a batch with less than 100 cells. Unlike the Zeisel data, the sample size of Tung data is relatively small. We run DESCEND and Poisson ASH on one replicate NA19091.r2 (96 cells in total) and compare their results on this dataset with a limited number of cells.
+
+Load the data:
+
+```{r}
+anno <- read.table("data/annotation.txt", header = TRUE,stringsAsFactors = FALSE)
+molecules <- read.table("data/molecules.txt", header = TRUE,stringsAsFactors = FALSE)
+
+# UMI count matrix for replicate NA19101.r2
+mol_19101_r2 <- molecules[ ,anno$batch == "NA19101.r2"]
+
+# dimension of subset
+dim(mol_19101_r2)
+```
+
+For each sample $c$, we compute the scaling factors $\alpha_c$ as the normalized library sizes:
+
+```{r}
+# library size
+libsize_19101_r2  = colSums(mol_19101_r2)  
+
+# normalized library size
+scale_19101_r2  = libsize_19101_r2 /mean(libsize_19101_r2)  
+```
+
+## Run deconvolution methods
+
+We run DESCEND, Poisson ASH and nonparametric deconvolution for each gene. 
+
+```{r,eval=FALSE}
+source("code/deconvolution.R")
+res_19101_r2 = deconv_data(mol_19101_r2)
+saveRDS(res_19101_r2, file="output/res_tung.rds")
+```
+
+## Results
+
+We compare the properties (mean, CV, $\pi_0$) of fitted prior $\hat{G}$ by DESCEND and Poisson ASH. 
+```{r}
+res_19101_r2 = readRDS("output/res_tung.rds")
+
+# compobs: genes that total UMI count under 5
+compobs = (rowSums(mol_19101_r2>0)>=5)
+
+# compare prior mean
+cor(log(res_19101_r2$mean_ash), log(res_19101_r2$mean_descend), use="complete.obs")
+
+plot(log(res_19101_r2$mean_ash), log(res_19101_r2$mean_descend),
+     xlab="Poisson ash", ylab="DESCEND", main="Mean of G (log-log scale)",
+     xlim=c(-7,7),ylim=c(-7,7))
+abline(0,1,col=2)
+
+# compare prior CV (on compobs)
+cor(res_19101_r2$cv_ash[compobs], res_19101_r2$cv_descend[compobs], use="complete.obs")
+
+plot(res_19101_r2$cv_ash[compobs], res_19101_r2$cv_descend[compobs],
+     xlab="Poisson ash", ylab="DESCEND", main="CV of G",
+     xlim=c(0,4),ylim=c(0,4))
+abline(0,1,col=2)
+
+# compare prior pi0
+plot(res_19101_r2$pi0_ash, res_19101_r2$pi0_descend,
+     xlab="Poisson ash", ylab="DESCEND", main="Null proportion of G",
+     xlim=c(0,1),ylim=c(0,1))
+abline(0,1,col=2)
+```
+
+
+

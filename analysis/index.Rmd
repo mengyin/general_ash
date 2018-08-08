@@ -1,17 +1,20 @@
 ---
-title: "General Adaptive Shrinkage (ASH) Application Examples"
+title: "General Adaptive Shrinkage (ASH) Models and Examples"
 site: workflowr::wflow_site
 output:
   workflowr::wflow_html:
     toc: false
 ---
 
-Here are some application examples for general ASH.
+[Models and methods](genash.pdf).
 
-ASH with log-F likelihood (FASH):
+Application examples:
 
-- [Use FASH to analyze the stem cell gene expression data (Burrows data).](stem.html)
+- ASH with log-F likelihood (FASH): [Use FASH to analyze the stem cell gene expression data (Burrows data).](stem.html)
 
-ASH with binomial likelihood:
+- ASH with binomial likelihood: [Use binomial ASH to compare bulk RNA-seq vs scRNA-seq data.](bulk_single.html)
 
-- [Use binomial ASH to compare bulk RNA-seq vs scRNA-seq data.](bulk_single.html)
+- ASH with Poisson likelihood: [Gene expression distribution deconvolution for scRNA-seq data](sc.pdf).
+
+    * [Data analysis on Tung data.](tung.html)
+
