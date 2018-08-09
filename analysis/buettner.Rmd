@@ -1,6 +1,6 @@
 ---
-title: "buettner"
-author: "mengyin"
+title: "Gene expression distribution deconvolution on Buettner Data"
+author: "Mengyin Lu"
 date: "2018-08-09"
 output: workflowr::wflow_html
 ---
