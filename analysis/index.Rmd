@@ -17,4 +17,6 @@ Application examples:
 - ASH with Poisson likelihood: [Gene expression distribution deconvolution for scRNA-seq data](sc.pdf).
 
     * [Data analysis on Tung data.](tung.html)
+    
+    * [Data analysis on Buettner data.](buettner.html)
 

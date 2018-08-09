@@ -1,0 +1,123 @@
+---
+title: "buettner"
+author: "mengyin"
+date: "2018-08-09"
+output: workflowr::wflow_html
+---
+
+## Data
+
+The data in [Buettner et al.](https://www.ncbi.nlm.nih.gov/pubmed/25599176) were used in [Bacher and Kendziorski](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4823857/) to estimate the number of modes of observed log expression distribution. Individual Mus musculus embryonic stem cells were sorted using fluorescence-activated cell sorting (FACS) for cell-cycle stage, then single cell RNA-seq was performed using the C1 Single Cell Auto Prep System (Fluidigm). The scRNA-seq dataset is consisted of 96 Mus musculus embryonic stem cells in the G2M stage of the cell cycle. This dataset is publicly available at https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-2805/. 
+
+Load data:
+
+```{r, message=FALSE}
+library(reshape2)
+library(mclust)
+library(ggplot2)
+library(RColorBrewer)
+library(blockmodeling)
+library(EBSeq)
+source("code/deconvolution.R")
+
+load("data/BuettnerG2M.Rdata")
+scONE = BuettnerG2M[apply(BuettnerG2M, 1, function(x) !all(x==0)),]
+scONE = scONE[!grepl( "ERCC-" , rownames( scONE ) ), ]  # remove ERCC spike-in
+rawcount = scONE
+
+# compute scaling factors (normalized library sizes)
+libsize_buettner = colSums(rawcount)
+scale_buettner = libsize_buettner/mean(libsize_buettner)
+```
+
+Only keep genes with at least 25% non-zero expressed cells. Then randomly choose 1000 genes as in Bacher and Kendziorski:
+
+```{r}
+set.seed(55)
+zeropercent = apply(scONE, 1, function(x) sum(x==0))/dim(scONE)[2]
+nonzeroindex = which(zeropercent<0.75)
+scONE = scONE[nonzeroindex,]
+subset_idx = sample(1:dim(scONE)[1],1000)
+count = scONE[subset_idx,]
+```
+
+## Mclust
+
+As suggested in Bacher and Kendziorski (Fig. 1c), we apply the Mclust package on these 1000 genes and estimate the number of modes for log expression. 
+
+```{r}
+Sizes = MedianNorm(scONE)
+scONE = GetNormalizedMat(scONE, Sizes)
+mcONE = apply(scONE[subset_idx,], 1, function(y) Mclust(log(y[y>0]), warn=FALSE)$G)
+```
+
+Distribution of the estimated number of modes:
+
+```{r}
+table(mcONE)
+```
+
+
+## Run deconvolution methods
+
+We run DESCEND, Poisson ASH and nonparametric deconvolution for each gene. 
+
+```{r,eval=FALSE}
+# deconvolution
+res_buettner = deconv_data(count, scale=scale_buettner)
+
+res_buettner = data.frame(res_buettner)
+res_buettner$mc = mcONE
+saveRDS(res_buettner, file="output/res_buettner.rds")
+```
+
+## Check genes with 4 Mclust modes
+
+```{r}
+res_buettner = readRDS("output/res_buettner.rds")
+```
+
+We see that there are two genes with 4 Mclust modes for log expression. We check these two genes: `r row.names(count)[which(res_buettner$mc>3)[1]]` and `r row.names(count)[which(res_buettner$mc>3)[2]]`.
+
+```{r}
+# For the genes with 4 Mclust modes, show the
+# log-likelihood difference between nonparametric deconvolution
+# and Poisson ASH (delta_0 + unimodal prior)
+(res_buettner$loglike_ashnonp-res_buettner$loglike_ash)[res_buettner$mc>3]
+```
+
+The gene expression distribution deconvolution results for gene `r row.names(count)[which(res_buettner$mc>3)[1]]`:
+
+```{r}
+idx = which(res_buettner$mc>3)[1]
+genename = row.names(count)[idx]
+res_buettner[idx,]
+```
+
+Scaled expression distribution, fitted expression distribution $\hat{G}_g$ by DESCEND and Poisson ASH of gene `r row.names(count)[which(res_buettner$mc>3)[1]]`:
+
+```{r,message=FALSE}
+hist(as.numeric(count[idx,]/scale_buettner),50, 
+     xlab="Scaled expression",
+     main=paste0("Scaled expression (",genename,")"))
+tmp = deconv_sing(as.numeric(count[idx,]), scale=scale_buettner,
+                  plot.dens=TRUE, plot.cdf = TRUE)
+```
+
+The gene expression distribution deconvolution results for gene `r row.names(count)[which(res_buettner$mc>3)[2]]`:
+
+```{r}
+idx = which(res_buettner$mc>3)[2]
+genename = row.names(count)[idx]
+res_buettner[idx,]
+```
+
+Scaled expression distribution, fitted expression distribution $\hat{G}_g$ by DESCEND and Poisson ASH of gene `r row.names(count)[which(res_buettner$mc>3)[2]]`:
+
+```{r,message=FALSE}
+hist(as.numeric(count[idx,]/scale_buettner),50, 
+     xlab="Scaled expression",
+     main=paste0("Scaled expression (",genename,")"))
+tmp = deconv_sing(as.numeric(count[idx,]), scale=scale_buettner,
+                  plot.dens=TRUE, plot.cdf = TRUE)
+```
