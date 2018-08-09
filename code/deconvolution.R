@@ -137,6 +137,7 @@ deconv_sing = function(y, scale, output.fit=FALSE, plot.dens=FALSE, plot.cdf=FAL
   }
   
   if (class(fit_ashuni)!="try-error"){
+    g_ashuni = fit_ashuni$fitted_g
     pi0_ashuni = NA 
     mean_ashuni = mean_unimix(g_ashuni)
     activemean_ashuni = mean_unimix(g_ashuni, include_g0 = FALSE)
@@ -144,7 +145,6 @@ deconv_sing = function(y, scale, output.fit=FALSE, plot.dens=FALSE, plot.cdf=FAL
     loglike_ashuni = fit_ashuni$loglik
     
     # then fit the model with unimodal prior and point mass at 0
-    g_ashuni = fit_ashuni$fitted_g
     g = unimix(rep(1/(length(g_ashuni$a)+1), length(g_ashuni$a)+1), 
                c(0, g_ashuni$a), c(0, g_ashuni$b)) # add delta_0
     
