@@ -9,11 +9,11 @@
 <meta name="generator" content="pandoc" />
 
 
-<meta name="author" content="mengyin" />
+<meta name="author" content="Mengyin Lu" />
 
 <meta name="date" content="2018-08-09" />
 
-<title>buettner</title>
+<title>Gene expression distribution deconvolution on Buettner Data</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -316,8 +316,8 @@ div.section {
 
 
 
-<h1 class="title toc-ignore">buettner</h1>
-<h4 class="author"><em>mengyin</em></h4>
+<h1 class="title toc-ignore">Gene expression distribution deconvolution on Buettner Data</h1>
+<h4 class="author"><em>Mengyin Lu</em></h4>
 <h4 class="date"><em>2018-08-09</em></h4>
 
 </div>
@@ -347,7 +347,7 @@ div.section {
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/mengyin/general_ash/tree/c6e76ce20183c1c6879807ec65476de017e4389c" target="_blank">c6e76ce</a> </summary></p>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/mengyin/general_ash/tree/d7cd9998b933d566aa6273074125b233b8642be4" target="_blank">d7cd999</a> </summary></p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 <pre><code>
 Ignored files:
@@ -362,10 +362,7 @@ Ignored files:
     Ignored:    docs/._genash.pdf
 
 Untracked files:
-    Untracked:  output/res_buettner.rds
-
-Unstaged changes:
-    Modified:   code/deconvolution.R
+    Untracked:  analysis/zeisel.Rmd
 
 </code></pre>
 Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes. </details>
@@ -394,6 +391,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/d7cd9998b933d566aa6273074125b233b8642be4/analysis/buettner.Rmd" target="_blank">d7cd999</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-09
+</td>
+<td style="text-align:left;">
+fix typo in Buettner data analysis
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/mengyin/general_ash/9a131d3e4b3836e2072ebbeaee01c0575c86c5ff/docs/buettner.html" target="_blank">9a131d3</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-09
+</td>
+<td style="text-align:left;">
+Build site.
+</td>
+</tr>
 <tr>
 <td style="text-align:left;">
 Rmd
@@ -500,6 +531,36 @@ ENSMUSG00000022897     0.001021379        -638.3614        -643.7556  4</code></
      xlab=&quot;Scaled expression&quot;,
      main=paste0(&quot;Scaled expression (&quot;,genename,&quot;)&quot;))</code></pre>
 <p><img src="figure/buettner.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-9-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/9a131d3e4b3836e2072ebbeaee01c0575c86c5ff/docs/figure/buettner.Rmd/unnamed-chunk-9-1.png" target="_blank">9a131d3</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-09
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <pre class="r"><code>tmp = deconv_sing(as.numeric(count[idx,]), scale=scale_buettner,
                   plot.dens=TRUE, plot.cdf = TRUE)</code></pre>
 <pre><code>Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
@@ -624,7 +685,67 @@ misleading local false sign rates, and so is not recommended</code></pre>
 [1] &quot;neg loglikehood is  638.361398069896 df is  NA&quot;
 [1] &quot;Compute LRT test, Nonzero fraction = 1&quot;
 [1] &quot;neg loglikehood is  643.755600874281 df is  1&quot;</code></pre>
-<p><img src="figure/buettner.Rmd/unnamed-chunk-9-2.png" width="672" style="display: block; margin: auto;" /><img src="figure/buettner.Rmd/unnamed-chunk-9-3.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/buettner.Rmd/unnamed-chunk-9-2.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-9-2.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/9a131d3e4b3836e2072ebbeaee01c0575c86c5ff/docs/figure/buettner.Rmd/unnamed-chunk-9-2.png" target="_blank">9a131d3</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-09
+</td>
+</tr>
+</tbody>
+</table>
+<p></details> <img src="figure/buettner.Rmd/unnamed-chunk-9-3.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-9-3.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/9a131d3e4b3836e2072ebbeaee01c0575c86c5ff/docs/figure/buettner.Rmd/unnamed-chunk-9-3.png" target="_blank">9a131d3</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-09
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>The gene expression distribution deconvolution results for gene ENSMUSG00000027371:</p>
 <pre class="r"><code>idx = which(res_buettner$mc&gt;3)[2]
 genename = row.names(count)[idx]
@@ -650,6 +771,36 @@ ENSMUSG00000027371     3.14862e-70        -272.5372        -429.4678  4</code></
      xlab=&quot;Scaled expression&quot;,
      main=paste0(&quot;Scaled expression (&quot;,genename,&quot;)&quot;))</code></pre>
 <p><img src="figure/buettner.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-11-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/9a131d3e4b3836e2072ebbeaee01c0575c86c5ff/docs/figure/buettner.Rmd/unnamed-chunk-11-1.png" target="_blank">9a131d3</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-09
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <pre class="r"><code>tmp = deconv_sing(as.numeric(count[idx,]), scale=scale_buettner,
                   plot.dens=TRUE, plot.cdf = TRUE)</code></pre>
 <pre><code>Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
@@ -803,7 +954,67 @@ Try increasing maxiter and rerunning.</code></pre>
 [1] &quot;neg loglikehood is  272.53719390142 df is  NA&quot;
 [1] &quot;Compute LRT test, Nonzero fraction = 1&quot;
 [1] &quot;neg loglikehood is  429.467758357856 df is  1&quot;</code></pre>
-<p><img src="figure/buettner.Rmd/unnamed-chunk-11-2.png" width="672" style="display: block; margin: auto;" /><img src="figure/buettner.Rmd/unnamed-chunk-11-3.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/buettner.Rmd/unnamed-chunk-11-2.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-11-2.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/9a131d3e4b3836e2072ebbeaee01c0575c86c5ff/docs/figure/buettner.Rmd/unnamed-chunk-11-2.png" target="_blank">9a131d3</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-09
+</td>
+</tr>
+</tbody>
+</table>
+<p></details> <img src="figure/buettner.Rmd/unnamed-chunk-11-3.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-11-3.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/9a131d3e4b3836e2072ebbeaee01c0575c86c5ff/docs/figure/buettner.Rmd/unnamed-chunk-11-3.png" target="_blank">9a131d3</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-09
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
