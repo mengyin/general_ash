@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="mengyin" />
+
+<meta name="date" content="2018-08-09" />
+
+<title>buettner</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.0.13/css/fa-svg-with-js.css" rel="stylesheet" />
+<script src="site_libs/font-awesome-5.0.13/js/fontawesome-all.min.js"></script>
+<script src="site_libs/font-awesome-5.0.13/js/fa-v4-shims.min.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">general_ash</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jdblischak/workflowr">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">buettner</h1>
+<h4 class="author"><em>mengyin</em></h4>
+<h4 class="date"><em>2018-08-09</em></h4>
+
+</div>
+
+
+<p><strong>Last updated:</strong> 2018-08-09</p>
+<strong>workflowr checks:</strong> <small>(Click a bullet for more information)</small>
+<ul>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>R Markdown file:</strong> up-to-date </summary></p>
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Environment:</strong> empty </summary></p>
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(20180705)</code> </summary></p>
+<p>The command <code>set.seed(20180705)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Session information:</strong> recorded </summary></p>
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/mengyin/general_ash/tree/c6e76ce20183c1c6879807ec65476de017e4389c" target="_blank">c6e76ce</a> </summary></p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+<pre><code>
+Ignored files:
+    Ignored:    analysis/._index.Rmd
+    Ignored:    analysis/stem_cache/
+    Ignored:    code/._deconvolution.R
+    Ignored:    data/._BuettnerG2M.Rdata
+    Ignored:    data/._annotation.txt
+    Ignored:    data/._molecules.txt
+    Ignored:    data/._reads-bulk.txt
+    Ignored:    data/._zeisel.rds
+    Ignored:    docs/._genash.pdf
+
+Untracked files:
+    Untracked:  output/res_buettner.rds
+
+Unstaged changes:
+    Modified:   code/deconvolution.R
+
+</code></pre>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes. </details>
+</li>
+</ul>
+<details> <summary> <small><strong>Expand here to see past versions:</strong></small> </summary>
+<ul>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+File
+</th>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+<th style="text-align:left;">
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/c6e76ce20183c1c6879807ec65476de017e4389c/analysis/buettner.Rmd" target="_blank">c6e76ce</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-09
+</td>
+<td style="text-align:left;">
+add Buettner data analysis
+</td>
+</tr>
+</tbody>
+</table>
+</ul>
+<p></details></p>
+<hr />
+<div id="data" class="section level2">
+<h2>Data</h2>
+<p>The data in <a href="https://www.ncbi.nlm.nih.gov/pubmed/25599176">Buettner et al.</a> were used in <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4823857/">Bacher and Kendziorski</a> to estimate the number of modes of observed log expression distribution. Individual Mus musculus embryonic stem cells were sorted using fluorescence-activated cell sorting (FACS) for cell-cycle stage, then single cell RNA-seq was performed using the C1 Single Cell Auto Prep System (Fluidigm). The scRNA-seq dataset is consisted of 96 Mus musculus embryonic stem cells in the G2M stage of the cell cycle. This dataset is publicly available at <a href="https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-2805/" class="uri">https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-2805/</a>.</p>
+<p>Load data:</p>
+<pre class="r"><code>library(reshape2)
+library(mclust)
+library(ggplot2)
+library(RColorBrewer)
+library(blockmodeling)
+library(EBSeq)
+source(&quot;code/deconvolution.R&quot;)
+
+load(&quot;data/BuettnerG2M.Rdata&quot;)
+scONE = BuettnerG2M[apply(BuettnerG2M, 1, function(x) !all(x==0)),]
+scONE = scONE[!grepl( &quot;ERCC-&quot; , rownames( scONE ) ), ]  # remove ERCC spike-in
+rawcount = scONE
+
+# compute scaling factors (normalized library sizes)
+libsize_buettner = colSums(rawcount)
+scale_buettner = libsize_buettner/mean(libsize_buettner)</code></pre>
+<p>Only keep genes with at least 25% non-zero expressed cells. Then randomly choose 1000 genes as in Bacher and Kendziorski:</p>
+<pre class="r"><code>set.seed(55)
+zeropercent = apply(scONE, 1, function(x) sum(x==0))/dim(scONE)[2]
+nonzeroindex = which(zeropercent&lt;0.75)
+scONE = scONE[nonzeroindex,]
+subset_idx = sample(1:dim(scONE)[1],1000)
+count = scONE[subset_idx,]</code></pre>
+</div>
+<div id="mclust" class="section level2">
+<h2>Mclust</h2>
+<p>As suggested in Bacher and Kendziorski (Fig. 1c), we apply the Mclust package on these 1000 genes and estimate the number of modes for log expression.</p>
+<pre class="r"><code>Sizes = MedianNorm(scONE)
+scONE = GetNormalizedMat(scONE, Sizes)
+mcONE = apply(scONE[subset_idx,], 1, function(y) Mclust(log(y[y&gt;0]), warn=FALSE)$G)</code></pre>
+<p>Distribution of the estimated number of modes:</p>
+<pre class="r"><code>table(mcONE)</code></pre>
+<pre><code>mcONE
+  1   2   3   4 
+343 614  41   2 </code></pre>
+</div>
+<div id="run-deconvolution-methods" class="section level2">
+<h2>Run deconvolution methods</h2>
+<p>We run DESCEND, Poisson ASH and nonparametric deconvolution for each gene.</p>
+<pre class="r"><code># deconvolution
+res_buettner = deconv_data(count, scale=scale_buettner)
+
+res_buettner = data.frame(res_buettner)
+res_buettner$mc = mcONE
+saveRDS(res_buettner, file=&quot;output/res_buettner.rds&quot;)</code></pre>
+</div>
+<div id="check-genes-with-4-mclust-modes" class="section level2">
+<h2>Check genes with 4 Mclust modes</h2>
+<pre class="r"><code>res_buettner = readRDS(&quot;output/res_buettner.rds&quot;)</code></pre>
+<p>We see that there are two genes with 4 Mclust modes for log expression. We check these two genes: ENSMUSG00000022897 and ENSMUSG00000027371.</p>
+<pre class="r"><code># For the genes with 4 Mclust modes, show the
+# log-likelihood difference between nonparametric deconvolution
+# and Poisson ASH (delta_0 + unimodal prior)
+(res_buettner$loglike_ashnonp-res_buettner$loglike_ash)[res_buettner$mc&gt;3]</code></pre>
+<pre><code>[1] 9.203320 2.713267</code></pre>
+<p>The gene expression distribution deconvolution results for gene ENSMUSG00000022897:</p>
+<pre class="r"><code>idx = which(res_buettner$mc&gt;3)[1]
+genename = row.names(count)[idx]
+res_buettner[idx,]</code></pre>
+<pre><code>                   pi0_ashnonp mean_ashnonp activemean_ashnonp cv_ashnonp
+ENSMUSG00000022897 0.008335636     316.0492           318.7058  0.7907964
+                   loglike_ashnonp     pi0_ash mean_ash activemean_ash
+ENSMUSG00000022897       -621.5064 0.007989527 311.3259       313.8333
+                      cv_ash loglike_ash pi0_ashuni mean_ashuni
+ENSMUSG00000022897 0.8032905   -630.7098          0    311.9166
+                   activemean_ashuni cv_ashuni loglike_ashuni pi0_ashuni0
+ENSMUSG00000022897          311.9166  0.799811      -631.3713  0.00185466
+                   mean_ashuni0 activemean_ashuni0 cv_ashuni0
+ENSMUSG00000022897      312.795           313.3762  0.8332409
+                   loglike_ashuni0 pi0_descend mean_descend
+ENSMUSG00000022897       -633.0897  0.01046986      315.499
+                   activemean_descend cv_descend nmodes_descend
+ENSMUSG00000022897           318.8372  0.7796472              1
+                   LRTpval_descend loglike_descfull loglike_descnon0 mc
+ENSMUSG00000022897     0.001021379        -638.3614        -643.7556  4</code></pre>
+<p>Scaled expression distribution, fitted expression distribution <span class="math inline">\(\hat{G}_g\)</span> by DESCEND and Poisson ASH of gene ENSMUSG00000022897:</p>
+<pre class="r"><code>hist(as.numeric(count[idx,]/scale_buettner),50, 
+     xlab=&quot;Scaled expression&quot;,
+     main=paste0(&quot;Scaled expression (&quot;,genename,&quot;)&quot;))</code></pre>
+<p><img src="figure/buettner.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>tmp = deconv_sing(as.numeric(count[idx,]), scale=scale_buettner,
+                  plot.dens=TRUE, plot.cdf = TRUE)</code></pre>
+<pre><code>Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended</code></pre>
+<pre><code>Warning in estimate_mixprop(data, g, prior, optmethod = optmethod, control
+= control, : Optimization failed to converge. Results may be unreliable.
+Try increasing maxiter and rerunning.</code></pre>
+<pre><code>Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended</code></pre>
+<pre><code>[1] &quot;Compute penalized MLE, the 1th time&quot;
+[1] &quot;c0 is  1&quot;
+[1] &quot;Relative fake information is:7.64%&quot;
+[1] &quot;c0 is  0.0654779696942873&quot;
+[1] &quot;Relative fake information is:0.34%&quot;
+[1] &quot;Compute penalized MLE, the 2th time&quot;
+[1] &quot;c0 is  0.0654779696942873&quot;
+[1] &quot;Relative fake information is:0.34%&quot;
+[1] &quot;Compute LRT tests, in total 1 tests&quot;
+[1] &quot;Compute LRT test, Full model&quot;
+[1] &quot;neg loglikehood is  638.361398069896 df is  NA&quot;
+[1] &quot;Compute LRT test, Nonzero fraction = 1&quot;
+[1] &quot;neg loglikehood is  643.755600874281 df is  1&quot;</code></pre>
+<p><img src="figure/buettner.Rmd/unnamed-chunk-9-2.png" width="672" style="display: block; margin: auto;" /><img src="figure/buettner.Rmd/unnamed-chunk-9-3.png" width="672" style="display: block; margin: auto;" /></p>
+<p>The gene expression distribution deconvolution results for gene ENSMUSG00000027371:</p>
+<pre class="r"><code>idx = which(res_buettner$mc&gt;3)[2]
+genename = row.names(count)[idx]
+res_buettner[idx,]</code></pre>
+<pre><code>                   pi0_ashnonp mean_ashnonp activemean_ashnonp cv_ashnonp
+ENSMUSG00000027371    0.560832     29.41472           66.97829   2.486797
+                   loglike_ashnonp   pi0_ash mean_ash activemean_ash
+ENSMUSG00000027371       -249.4289 0.3191115  28.6767       42.11658
+                     cv_ash loglike_ash pi0_ashuni mean_ashuni
+ENSMUSG00000027371 2.605064   -252.1421  0.4887148    28.67667
+                   activemean_ashuni cv_ashuni loglike_ashuni pi0_ashuni0
+ENSMUSG00000027371          56.08739  2.605065      -252.1424   0.4887556
+                   mean_ashuni0 activemean_ashuni0 cv_ashuni0
+ENSMUSG00000027371     28.67668           56.09185   2.605065
+                   loglike_ashuni0 pi0_descend mean_descend
+ENSMUSG00000027371       -252.1427   0.5753194     28.17489
+                   activemean_descend cv_descend nmodes_descend
+ENSMUSG00000027371           66.34371   2.319575              0
+                   LRTpval_descend loglike_descfull loglike_descnon0 mc
+ENSMUSG00000027371     3.14862e-70        -272.5372        -429.4678  4</code></pre>
+<p>Scaled expression distribution, fitted expression distribution <span class="math inline">\(\hat{G}_g\)</span> by DESCEND and Poisson ASH of gene ENSMUSG00000027371:</p>
+<pre class="r"><code>hist(as.numeric(count[idx,]/scale_buettner),50, 
+     xlab=&quot;Scaled expression&quot;,
+     main=paste0(&quot;Scaled expression (&quot;,genename,&quot;)&quot;))</code></pre>
+<p><img src="figure/buettner.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>tmp = deconv_sing(as.numeric(count[idx,]), scale=scale_buettner,
+                  plot.dens=TRUE, plot.cdf = TRUE)</code></pre>
+<pre><code>Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended
+
+Warning in check_args(mixcompdist, df, prior, optmethod, gridmult,
+sebetahat, : Use of halfuniform without nullbiased prior can lead to
+misleading local false sign rates, and so is not recommended</code></pre>
+<pre><code>Warning in estimate_mixprop(data, g, prior, optmethod = optmethod, control
+= control, : Optimization failed to converge. Results may be unreliable.
+Try increasing maxiter and rerunning.</code></pre>
+<pre><code>[1] &quot;Compute penalized MLE, the 1th time&quot;
+[1] &quot;c0 is  1&quot;
+[1] &quot;Relative fake information is:2.42%&quot;
+[1] &quot;c0 is  0.206579348197069&quot;
+[1] &quot;Relative fake information is:0.42%&quot;
+[1] &quot;Compute penalized MLE, the 2th time&quot;
+[1] &quot;c0 is  0.206579348197069&quot;
+[1] &quot;Relative fake information is:0.42%&quot;
+[1] &quot;Compute LRT tests, in total 1 tests&quot;
+[1] &quot;Compute LRT test, Full model&quot;
+[1] &quot;neg loglikehood is  272.53719390142 df is  NA&quot;
+[1] &quot;Compute LRT test, Nonzero fraction = 1&quot;
+[1] &quot;neg loglikehood is  429.467758357856 df is  1&quot;</code></pre>
+<p><img src="figure/buettner.Rmd/unnamed-chunk-11-2.png" width="672" style="display: block; margin: auto;" /><img src="figure/buettner.Rmd/unnamed-chunk-11-3.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="session-information" class="section level2">
+<h2>Session information</h2>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.5.0 (2018-04-23)
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+Running under: macOS High Sierra 10.13.3
+
+Matrix products: default
+BLAS: /Library/Frameworks/R.framework/Versions/3.5/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/3.5/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] descend_0.0.0.9000  ashr_2.2-8          EBSeq_1.20.0       
+ [4] testthat_2.0.0      gplots_3.0.1        blockmodeling_0.3.1
+ [7] RColorBrewer_1.1-2  ggplot2_3.0.0       mclust_5.4.1       
+[10] reshape2_1.4.3     
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_0.12.18       lattice_0.20-35    gtools_3.8.1      
+ [4] assertthat_0.2.0   rprojroot_1.3-2    digest_0.6.15     
+ [7] foreach_1.4.4      truncnorm_1.0-8    R6_2.2.2          
+[10] plyr_1.8.4         MatrixModels_0.4-1 backports_1.1.2   
+[13] evaluate_0.11      pillar_1.3.0       rlang_0.2.1       
+[16] lazyeval_0.2.1     pscl_1.5.2         SparseM_1.77      
+[19] rstudioapi_0.7     gdata_2.18.0       whisker_0.3-2     
+[22] R.utils_2.6.0      R.oo_1.22.0        Matrix_1.2-14     
+[25] rmarkdown_1.10     splines_3.5.0      stringr_1.3.1     
+[28] munsell_0.5.0      compiler_3.5.0     pkgconfig_2.0.1   
+[31] SQUAREM_2017.10-1  pkgmaker_0.27      htmltools_0.3.6   
+[34] tidyselect_0.2.4   tibble_1.4.2       workflowr_1.1.1   
+[37] codetools_0.2-15   crayon_1.3.4       dplyr_0.7.6       
+[40] withr_2.1.2        MASS_7.3-50        bitops_1.0-6      
+[43] R.methodsS3_1.7.1  grid_3.5.0         xtable_1.8-2      
+[46] gtable_0.2.0       registry_0.5       git2r_0.23.0      
+[49] magrittr_1.5       scales_0.5.0       bibtex_0.4.2      
+[52] KernSmooth_2.23-15 stringi_1.2.4      doRNG_1.7.1       
+[55] doParallel_1.0.11  bindrcpp_0.2.2     iterators_1.0.10  
+[58] tools_3.5.0        glue_1.3.0         purrr_0.2.5       
+[61] rngtools_1.3.1     parallel_3.5.0     yaml_2.2.0        
+[64] colorspace_1.3-2   caTools_1.17.1.1   knitr_1.20        
+[67] bindr_0.1.1        quantreg_5.36     </code></pre>
+</div>
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+<hr>
+<p>
+  This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a>
+  analysis was created with
+  <a href="https://github.com/jdblischak/workflowr">workflowr</a> 1.1.1
+</p>
+<hr>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
