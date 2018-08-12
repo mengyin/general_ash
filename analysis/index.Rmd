@@ -19,4 +19,6 @@ Application examples:
     * [Data analysis on Tung data.](tung.html)
     
     * [Data analysis on Buettner data.](buettner.html)
+    
+    * [Data analysis on Zeisel data.](zeisel.html)
 

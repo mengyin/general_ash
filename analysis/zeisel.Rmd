@@ -1,0 +1,312 @@
+---
+title: "Gene expression distribution deconvolution on Zeisel Data"
+author: "Mengyin Lu"
+date: "2018-08-09"
+output: workflowr::wflow_html
+---
+
+## Data
+
+[Zeisel et al.](http://science.sciencemag.org/content/347/6226/1138) described a scRNA-seq dataset of mouse hippocampal region. The dataset has read counts of 12234 genes in 3005 cells from the mouse somatosensory cortex and hippocampus CA1 region. The 3005 cells have been clustered into 7 major cell types: Astrocytes-Ependymal, Endothelial-Mural, Interneurons, Microglia, Oligodendrocytes, CA1 pyramidal and S1 pyramidal, and the number cells in each cell type are 224, 235, 290, 98, 820, 939 and 399 respectively. The dataset is publicly available at https://hemberg-lab.github.io/scRNA.seq.datasets/mouse/esc/.
+
+Load data:
+
+```{r,message=FALSE}
+library(SingleCellExperiment)
+library(readr)
+source("code/deconvolution.R")
+
+zeisel = readRDS("data/zeisel.rds")
+
+# number of cells for different cell types
+table(colData(zeisel)$cell_type1)
+```
+
+Choose the subset with cell types Astrocytes-Ependymal, Endothelial-Mural and Microglia:
+
+```{r}
+mol_multi = counts(zeisel)[,colData(zeisel)$cell_type1 %in% 
+                           c("astrocytes","endothelial","ependymal","microglia","mural")]
+types = colData(zeisel)$cell_type1[colData(zeisel)$cell_type1 %in% 
+                                     c("astrocytes","endothelial","ependymal","microglia","mural")]
+
+# number of genes and number of cells
+dim(mol_multi)
+
+# compute scaling factors (normalized library sizes)
+libsize_multi = colSums(mol_multi)
+scale_multi = libsize_multi/mean(libsize_multi)
+```
+
+## Run deconvolution methods
+
+We run DESCEND, Poisson ASH and nonparametric deconvolution for each gene. 
+
+```{r, eval=FALSE}
+res_multi = deconv_data(mol_multi, scale=scale_multi)
+res_multi = data.frame(res_multi)
+saveRDS(res_multi, file="output/res_zeisel.rds")
+```
+
+We also run the ZINB deconvolution. The codes are implemented in Python, see [here](https://github.com/mengyin/general_ash/blob/master/code/zinb.ipynb).
+
+## Results
+
+```{r,message=FALSE}
+res_multi = readRDS("output/res_zeisel.rds")
+res_multi_zinb = read_csv("output/res_zeisel_zinb.csv")
+res_multi_zinb = data.frame(res_multi_zinb[,-1], row.names=res_multi_zinb$X1)
+```
+
+We compare the properties (mean, CV, $\pi_0$, log-likelihood, etc.) of fitted prior $\hat{G}$ by ZINB, DESCEND, Poisson ASH and nonparametric deconvolution.
+
+### Mean
+
+Plot the fitted prior's mean:
+
+```{r}
+plot(log(res_multi$mean_ash), log(res_multi$mean_ashnonp), 
+     xlab="Poisson ash", ylab="Nonparametric", main="Mean of G (log-log scale)",
+     xlim=c(-7,7),ylim=c(-7,7))
+abline(0,1,col=2)
+
+plot(log(res_multi$mean_ash), log(res_multi$mean_descend),
+     xlab="Poisson ash", ylab="DESCEND", main="Mean of G (log-log scale)",
+     xlim=c(-7,7),ylim=c(-7,7))
+abline(0,1,col=2)
+
+plot(log(res_multi$mean_ash), log(res_multi_zinb$mean_zinb),
+     xlab="Poisson ash", ylab="ZINB", main="Mean of G (log-log scale)",
+     xlim=c(-7,7),ylim=c(-7,7))
+abline(0,1,col=2)
+```
+
+Pearson correlation of the fitted prior mean between two methods:
+
+```{r}
+cor(log(res_multi$mean_ash), log(res_multi_zinb$mean_zinb),use="complete.obs")
+cor(log(res_multi$mean_ash), log(res_multi$mean_descend),use="complete.obs")
+cor(log(res_multi$mean_ash), log(res_multi$mean_ashnonp),use="complete.obs")
+cor(log(res_multi_zinb$mean_zinb), log(res_multi$mean_descend),use="complete.obs")
+compobs = (log(res_multi_zinb$mean_zinb)>-Inf & log(res_multi$mean_ashnonp)>-Inf)
+cor(log(res_multi_zinb$mean_zinb)[compobs], log(res_multi$mean_ashnonp)[compobs])
+cor(log(res_multi$mean_descend), log(res_multi$mean_ashnonp), use="complete.obs")
+```
+
+### Log-likelihood
+
+Compute the log-likelihood difference between two methods and the proportion of genes falling into the following 5 categories: $(-\infty, -5)$ (much lower), $(-5,-2)$ (significantly lower), $(-2,2)$ (similar), $(2,5)$ (significantly higher) and $(5,\infty)$ (much higher). We first compare the log-likelihood of the Poisson ASH unimodal model with that of the nonparametric deconvolution. 
+
+```{r}
+# loglike_ashuni is for the unimodal model with a positive mode, 
+# loglike_ashuni0 is for the unimodal model with mode at 0,
+# we choose the model with higher log-likelihood as the optimal unimodal model
+diff.nonp = res_multi$loglike_ashnonp-pmax(res_multi$loglike_ashuni,res_multi$loglike_ashuni0)
+diff.nonp = diff.nonp[!is.na(diff.nonp)]
+hist.nonp = hist(diff.nonp, breaks = c(min(diff.nonp),-5,-2,2,5,max(diff.nonp)),plot=FALSE)
+round(hist.nonp$counts/sum(hist.nonp$counts)*100,2)
+```
+
+Then we check the scaled expression distribution for those genes where nonparametric deconvolution gives much higher log-likelihood than Poisson ASH (unimodal).
+
+```{r}
+for (i in 1:6){
+  eg = mol_multi[order(pmax(res_multi$loglike_ashuni,res_multi$loglike_ashuni0)-res_multi$loglike_ash)[i],]
+  tab = table(eg, dnn="Y")
+  #print(tab)
+  genename = row.names(mol_multi)[order(pmax(res_multi$loglike_ashuni,res_multi$loglike_ashuni0)
+                                        - res_multi$loglike_ashnonp)[i]]
+  hist(eg/scale_multi,150, prob=TRUE, xlab="Scaled expression",
+       main=paste0("Scaled expression distribution for gene ",genename))
+}
+
+```
+
+The log-likelihood improvement upon the Poisson ASH unimodal model for these genes:
+
+```{r}
+o = order(pmax(res_multi$loglike_ashuni,res_multi$loglike_ashuni0)
+          - res_multi$loglike_ashnonp)
+tmp = cbind(res_multi,res_multi_zinb)[,c(5,10,27,35)]-pmax(res_multi$loglike_ashuni,res_multi$loglike_ashuni0)
+# substract the baseline ash unimodal model's log-likelihood
+round(tmp[o[1:6],],2)
+```
+
+The fitted prior for these genes (by DESCEND or Poisson ASH) is shown below. The six genes display a common pattern that, the scaled expression histogram split the cells into zero expression and non-zero expression parts, with noticeable gap between them. This suggests us to consider a more flexible expression distribution in with a point mass at zero $\delta_0$. 
+
+```{r,message=FALSE,warning=FALSE}
+par(mfrow=c(1,2))
+for (i in order(pmax(res_multi$loglike_ashuni,res_multi$loglike_ashuni0)
+                - res_multi$loglike_ashnonp)[1:6]){
+  tmp = deconv_sing(as.numeric(mol_multi[i,]), scale=scale_multi, plot.dens=TRUE, plot.cdf = TRUE)
+}
+```
+
+Next, we compare the log-likelihood of the methods with $\delta_0$: Poisson ASH ($\delta_0$ plus a unimodal prior), DESCEND, ZINB and nonparametric deconvolution. We compute the log-likelihood difference between Poisson ASH and the other three methods and the proportions of falling into 5 categories: $(-\infty, -5)$ (much lower), $(-5,-2)$ (significantly lower), $(-2,2)$ (similar), $(2,5)$ (significantly higher) and $(5,\infty)$ (much higher).
+
+```{r}
+diff.zinb = res_multi_zinb$loglike_zinb-res_multi$loglike_ash
+diff.zinb = diff.zinb[!is.na(diff.zinb)]
+hist.zinb = hist(diff.zinb, breaks = c(min(diff.zinb),-5,-2,2,5,max(diff.zinb)),plot=FALSE)
+round(hist.zinb$counts/sum(hist.zinb$counts)*100,2)
+
+diff.desc = res_multi$loglike_descfull-res_multi$loglike_ash
+diff.desc = diff.desc[!is.na(diff.desc)]
+hist.desc = hist(diff.desc, breaks = c(min(diff.desc),-5,-2,2,5,max(diff.desc)),plot=FALSE)
+round(hist.desc$counts/sum(hist.desc$counts)*100,2)
+
+diff.nonp = res_multi$loglike_ashnonp-res_multi$loglike_ash
+diff.nonp = diff.nonp[!is.na(diff.nonp)]
+hist.nonp = hist(diff.nonp, breaks = c(min(diff.nonp),-5,-2,2,5,max(diff.nonp)),plot=FALSE)
+round(hist.nonp$counts/sum(hist.nonp$counts)*100,2)
+```
+
+Check those genes where DESCEND's log-likelihood is much higher than Poisson ASH. See if there are multimodal patterns for these genes such that Poisson ASH is insufficient. 
+
+```{r}
+par(mfrow=c(1,2))
+for (i in 1:5){
+  eg = mol_multi[order(res_multi$loglike_ash - res_multi$loglike_descfull)[i],]
+  genename = row.names(mol_multi)[order(res_multi$loglike_ash - 
+                                          res_multi$loglike_descfull)[i]]
+  eg_scaled = eg/scale_multi
+  hist(eg_scaled,150, xlab="Scaled expression",
+       main=paste0("Scaled expression for gene ",genename))
+  hist(eg_scaled[eg_scaled>0],50, xlab="Scaled expression",
+       main=paste0("Non-zero scaled expression for gene ",genename))
+}
+```
+
+Then plot the fitted prior by DESCEND and Poisson ASH for these genes. The cdf plots indicate that for genes Nek7, Agpat3, Tdrp and Gak, DESCEND puts a much heavier probability mass on the right tail outside the x-axis range than Poisson ASH, which is actually unconvincing according to the above original scaled expression histogram. 
+
+```{r,message=FALSE,warning=FALSE}
+par(mfrow=c(1,2))
+for (i in order(res_multi$loglike_ash - res_multi$loglike_descfull)[1:5]){
+  tmp = deconv_sing(as.numeric(mol_multi[i,]), scale=scale_multi, plot.dens=TRUE, plot.cdf = TRUE)
+}
+```
+
+Now we check if the sub-population structure of cell types could result in multimodal patterns, take gene Agpat3 as example:
+
+```{r}
+idx = 2
+Y = mol_multi[order(res_multi$loglike_ash - res_multi$loglike_descfull)[idx],]
+genename = row.names(mol_multi)[order(res_multi$loglike_ash - 
+                                        res_multi$loglike_descfull)[idx]]
+Y_scaled = Y/scale_multi
+types1 = types[Y_scaled>0]
+Y_scaled = Y_scaled[Y_scaled>0]
+
+plot(Y_scaled[types1=="microglia"],rep(0,sum(types1=="microglia")), 
+     axes=FALSE, ylab="",xlab="scaled expression",pch=1, col="grey20",
+     xlim=c(0,max(Y_scaled)), ylim=c(-0.5,5),
+     main=paste0("Scaled expression for gene ",genename,", grouped by cell type"))
+points(Y_scaled[types1=="endothelial"],rep(1,sum(types1=="endothelial")),pch=1, col="grey20")
+points(Y_scaled[types1=="astrocytes"],rep(2,sum(types1=="astrocytes")),pch=1, col="grey20")
+points(Y_scaled[types1=="ependymal"],rep(3,sum(types1=="ependymal")),pch=1, col="grey20")
+points(Y_scaled[types1=="mural"],rep(4,sum(types1=="mural")),pch=1, col="grey20")
+axis(2, 0:4, labels=c("microglia","endothelial","astrocytes","ependymal","mural"),
+     las=1)
+axis(1, seq(0, max(Y_scaled)+1, 1))
+```
+
+The most notable difference in scaled expression distribution among different cell types is in the tail shape. The scaled expression distribution of Astrocytes cells yields significantly longer tail than that of Ependymal and Microglia, and also shows a rough bimodal pattern with two major parts split at 3. On the other hand, the scaled expression levels for Microglia and Ependymal cells are quite low and concentrated, and the scaled expression of Mural cells is either smaller than 3 or bigger than 9. This example shows that the scaled expression seems to have different spreads for different cell types, rather than yielding different mode/average levels. The bimodal pattern within Astrocytes mainly contributes to the overall "bimodal" scaled expression distribution, while the differences in expression distribution among the other cell types seem to be determined mainly by spreads. 
+
+Note that in Poisson ASH, the prior $H_g$ consists of many uniform mixture components with different widths (anchored at same mode). Even though the mixture components were not specifically designed for clustering sub-populations, their various spreads seem to corroborate the phenomenon described above, in that different sub-populations have tails with differing lengths.
+
+### CV
+
+Compare the coefficient of variation (CV) of fitted prior:
+
+```{r}
+plot(res_multi$cv_ash, res_multi$cv_ashnonp, 
+     xlab="Poisson ash", ylab="Nonparametric", main="CV of G",
+     xlim=c(0,50),ylim=c(0,50))
+abline(0,1,col=2)
+
+plot(res_multi$cv_ash, res_multi$cv_descend,
+     xlab="Poisson ash", ylab="DESCEND", main="CV of G",
+     xlim=c(0,50),ylim=c(0,50))
+abline(0,1,col=2)
+
+plot(res_multi$cv_ash, res_multi_zinb$cv_zinb,
+     xlab="Poisson ash", ylab="ZINB", main="CV of G",
+     xlim=c(0,50),ylim=c(0,50))
+abline(0,1,col=2)
+```
+
+After removing genes with less than 5 expressed cells:
+
+```{r}
+compobs = (rowSums(mol_multi>0)>=5)
+
+plot(res_multi$cv_ash[compobs], res_multi$cv_ashnonp[compobs], 
+     xlab="Poisson ash", ylab="Nonparametric", main="CV of G (filtered data)",
+     xlim=c(0,50),ylim=c(0,50))
+abline(0,1,col=2)
+
+plot(res_multi$cv_ash[compobs], res_multi$cv_descend[compobs],
+     xlab="Poisson ash", ylab="DESCEND", main="CV of G (filtered data)",
+     xlim=c(0,50),ylim=c(0,50))
+abline(0,1,col=2)
+
+plot(res_multi$cv_ash[compobs], res_multi_zinb$cv_zinb[compobs],
+     xlab="Poisson ash", ylab="ZINB", main="CV of G (filtered data)",
+     xlim=c(0,50),ylim=c(0,50))
+abline(0,1,col=2)
+```
+
+Pearson correlation of fitted prior CV between two methods (after removing genes with less than 5 expressed cells):
+
+```{r}
+cor(res_multi$cv_ash[compobs], res_multi_zinb$cv_zinb[compobs],use="complete.obs")
+cor(res_multi$cv_ash[compobs], res_multi$cv_descend[compobs],use="complete.obs")
+cor(res_multi$cv_ash[compobs], res_multi$cv_ashnonp[compobs],use="complete.obs")
+cor(res_multi_zinb$cv_zinb[compobs], res_multi$cv_descend[compobs],use="complete.obs")
+cor(res_multi_zinb$cv_zinb[compobs], res_multi$cv_ashnonp[compobs],use="complete.obs")
+cor(res_multi$cv_descend[compobs], res_multi$cv_ashnonp[compobs], use="complete.obs")
+```
+
+### Zero fraction $\pi_0$
+
+Compare the zero fraction of fitted prior $\hat{\pi}_0$:
+
+```{r}
+plot(res_multi$pi0_ash, res_multi$pi0_ashnonp, 
+     xlab="Poisson ash", ylab="Nonparametric", main="Null proportion of G",
+     xlim=c(0,1),ylim=c(0,1))
+abline(0,1,col=2)
+
+plot(res_multi$pi0_ash, res_multi$pi0_descend,
+     xlab="Poisson ash", ylab="DESCEND", main="Null proportion of G",
+     xlim=c(0,1),ylim=c(0,1))
+abline(0,1,col=2)
+
+plot(res_multi$pi0_ash, res_multi_zinb$pi0_zinb,
+     xlab="Poisson ash", ylab="ZINB", main="Null proportion of G",
+     xlim=c(0,1),ylim=c(0,1))
+abline(0,1,col=2)
+```
+
+After removing genes with less than 5 expressed cells:
+
+```{r}
+plot(res_multi$pi0_ash[compobs], res_multi$pi0_ashnonp[compobs], 
+     xlab="Poisson ash", ylab="Nonparametric", main="Null proportion of G",
+     xlim=c(0,1),ylim=c(0,1))
+abline(0,1,col=2)
+
+plot(res_multi$pi0_ash[compobs], res_multi$pi0_descend[compobs],
+     xlab="Poisson ash", ylab="DESCEND", main="Null proportion of G",
+     xlim=c(0,1),ylim=c(0,1))
+abline(0,1,col=2)
+
+plot(res_multi$pi0_ash[compobs], res_multi_zinb$pi0_zinb[compobs],
+     xlab="Poisson ash", ylab="ZINB", main="Null proportion of G",
+     xlim=c(0,1),ylim=c(0,1))
+abline(0,1,col=2)
+```
+
+
+
+
