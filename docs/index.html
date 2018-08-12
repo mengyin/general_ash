@@ -221,7 +221,7 @@ div.section {
 </div>
 
 
-<p><strong>Last updated:</strong> 2018-08-09</p>
+<p><strong>Last updated:</strong> 2018-08-12</p>
 <strong>workflowr checks:</strong> <small>(Click a bullet for more information)</small>
 <ul>
 <li>
@@ -230,26 +230,32 @@ div.section {
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/mengyin/general_ash/tree/c6e76ce20183c1c6879807ec65476de017e4389c" target="_blank">c6e76ce</a> </summary></p>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/mengyin/general_ash/tree/6037e6e5f1568cb755d7a05eb414aa3ae1d12a7c" target="_blank">6037e6e</a> </summary></p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 <pre><code>
 Ignored files:
     Ignored:    analysis/._index.Rmd
     Ignored:    analysis/stem_cache/
     Ignored:    code/._deconvolution.R
+    Ignored:    code/._zinb.ipynb
+    Ignored:    code/._zinb.py
     Ignored:    data/._BuettnerG2M.Rdata
     Ignored:    data/._annotation.txt
     Ignored:    data/._molecules.txt
     Ignored:    data/._reads-bulk.txt
     Ignored:    data/._zeisel.rds
+    Ignored:    data/._zeisel_multi.csv
     Ignored:    docs/._genash.pdf
+    Ignored:    output/._res_zeisel.rds
+    Ignored:    output/._res_zeisel_zinb.csv
 
 Untracked files:
-    Untracked:  docs/figure/buettner.Rmd/
-    Untracked:  output/res_buettner.rds
-
-Unstaged changes:
-    Modified:   code/deconvolution.R
+    Untracked:  code/zinb.ipynb
+    Untracked:  code/zinb.py
+    Untracked:  data/zeisel_multi.csv
+    Untracked:  docs/figure/zeisel.Rmd/
+    Untracked:  output/res_zeisel.rds
+    Untracked:  output/res_zeisel_zinb.csv
 
 </code></pre>
 Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes. </details>
@@ -278,6 +284,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/6037e6e5f1568cb755d7a05eb414aa3ae1d12a7c/analysis/index.Rmd" target="_blank">6037e6e</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-12
+</td>
+<td style="text-align:left;">
+add Zeisel data analysis
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/mengyin/general_ash/9a131d3e4b3836e2072ebbeaee01c0575c86c5ff/docs/index.html" target="_blank">9a131d3</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-09
+</td>
+<td style="text-align:left;">
+Build site.
+</td>
+</tr>
 <tr>
 <td style="text-align:left;">
 Rmd
@@ -479,6 +519,7 @@ Start workflowr project.
 <ul>
 <li><p><a href="tung.html">Data analysis on Tung data.</a></p></li>
 <li><p><a href="buettner.html">Data analysis on Buettner data.</a></p></li>
+<li><p><a href="zeisel.html">Data analysis on Zeisel data.</a></p></li>
 </ul></li>
 </ul>
 

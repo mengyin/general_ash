@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Mengyin Lu" />
+
+<meta name="date" content="2018-08-09" />
+
+<title>Gene expression distribution deconvolution on Zeisel Data</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.0.13/css/fa-svg-with-js.css" rel="stylesheet" />
+<script src="site_libs/font-awesome-5.0.13/js/fontawesome-all.min.js"></script>
+<script src="site_libs/font-awesome-5.0.13/js/fa-v4-shims.min.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">general_ash</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jdblischak/workflowr">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Gene expression distribution deconvolution on Zeisel Data</h1>
+<h4 class="author"><em>Mengyin Lu</em></h4>
+<h4 class="date"><em>2018-08-09</em></h4>
+
+</div>
+
+
+<p><strong>Last updated:</strong> 2018-08-12</p>
+<strong>workflowr checks:</strong> <small>(Click a bullet for more information)</small>
+<ul>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>R Markdown file:</strong> up-to-date </summary></p>
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Environment:</strong> empty </summary></p>
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(20180705)</code> </summary></p>
+<p>The command <code>set.seed(20180705)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Session information:</strong> recorded </summary></p>
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/mengyin/general_ash/tree/6037e6e5f1568cb755d7a05eb414aa3ae1d12a7c" target="_blank">6037e6e</a> </summary></p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+<pre><code>
+Ignored files:
+    Ignored:    analysis/._index.Rmd
+    Ignored:    analysis/stem_cache/
+    Ignored:    code/._deconvolution.R
+    Ignored:    code/._zinb.ipynb
+    Ignored:    code/._zinb.py
+    Ignored:    data/._BuettnerG2M.Rdata
+    Ignored:    data/._annotation.txt
+    Ignored:    data/._molecules.txt
+    Ignored:    data/._reads-bulk.txt
+    Ignored:    data/._zeisel.rds
+    Ignored:    data/._zeisel_multi.csv
+    Ignored:    docs/._genash.pdf
+    Ignored:    output/._res_zeisel.rds
+    Ignored:    output/._res_zeisel_zinb.csv
+
+Untracked files:
+    Untracked:  code/zinb.ipynb
+    Untracked:  code/zinb.py
+    Untracked:  data/zeisel_multi.csv
+    Untracked:  output/res_zeisel.rds
+    Untracked:  output/res_zeisel_zinb.csv
+
+</code></pre>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes. </details>
+</li>
+</ul>
+<details> <summary> <small><strong>Expand here to see past versions:</strong></small> </summary>
+<ul>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+File
+</th>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+<th style="text-align:left;">
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/mengyin/general_ash/blob/6037e6e5f1568cb755d7a05eb414aa3ae1d12a7c/analysis/zeisel.Rmd" target="_blank">6037e6e</a>
+</td>
+<td style="text-align:left;">
+mengyin
+</td>
+<td style="text-align:left;">
+2018-08-12
+</td>
+<td style="text-align:left;">
+add Zeisel data analysis
+</td>
+</tr>
+</tbody>
+</table>
+</ul>
+<p></details></p>
+<hr />
+<div id="data" class="section level2">
+<h2>Data</h2>
+<p><a href="http://science.sciencemag.org/content/347/6226/1138">Zeisel et al.</a> described a scRNA-seq dataset of mouse hippocampal region. The dataset has read counts of 12234 genes in 3005 cells from the mouse somatosensory cortex and hippocampus CA1 region. The 3005 cells have been clustered into 7 major cell types: Astrocytes-Ependymal, Endothelial-Mural, Interneurons, Microglia, Oligodendrocytes, CA1 pyramidal and S1 pyramidal, and the number cells in each cell type are 224, 235, 290, 98, 820, 939 and 399 respectively. The dataset is publicly available at <a href="https://hemberg-lab.github.io/scRNA.seq.datasets/mouse/esc/" class="uri">https://hemberg-lab.github.io/scRNA.seq.datasets/mouse/esc/</a>.</p>
+<p>Load data:</p>
+<pre class="r"><code>library(SingleCellExperiment)</code></pre>
+<pre><code>Warning: package &#39;GenomicRanges&#39; was built under R version 3.5.1</code></pre>
+<pre><code>Warning: package &#39;DelayedArray&#39; was built under R version 3.5.1</code></pre>
+<pre class="r"><code>library(readr)
+source(&quot;code/deconvolution.R&quot;)
+
+zeisel = readRDS(&quot;data/zeisel.rds&quot;)
+
+# number of cells for different cell types
+table(colData(zeisel)$cell_type1)</code></pre>
+<pre><code>
+      astrocytes     ca1pyramidal      endothelial        ependymal 
+             198              948              175               26 
+    interneurons        microglia            mural oligodendrocytes 
+             290               98               60              820 
+     s1pyramidal 
+             390 </code></pre>
+<p>Choose the subset with cell types Astrocytes-Ependymal, Endothelial-Mural and Microglia:</p>
+<pre class="r"><code>mol_multi = counts(zeisel)[,colData(zeisel)$cell_type1 %in% 
+                           c(&quot;astrocytes&quot;,&quot;endothelial&quot;,&quot;ependymal&quot;,&quot;microglia&quot;,&quot;mural&quot;)]
+types = colData(zeisel)$cell_type1[colData(zeisel)$cell_type1 %in% 
+                                     c(&quot;astrocytes&quot;,&quot;endothelial&quot;,&quot;ependymal&quot;,&quot;microglia&quot;,&quot;mural&quot;)]
+
+# number of genes and number of cells
+dim(mol_multi)</code></pre>
+<pre><code>[1] 19972   557</code></pre>
+<pre class="r"><code># compute scaling factors (normalized library sizes)
+libsize_multi = colSums(mol_multi)
+scale_multi = libsize_multi/mean(libsize_multi)</code></pre>
+</div>
+<div id="run-deconvolution-methods" class="section level2">
+<h2>Run deconvolution methods</h2>
+<p>We run DESCEND, Poisson ASH and nonparametric deconvolution for each gene.</p>
+<pre class="r"><code>res_multi = deconv_data(mol_multi, scale=scale_multi)
+res_multi = data.frame(res_multi)
+saveRDS(res_multi, file=&quot;output/res_zeisel.rds&quot;)</code></pre>
+<p>We also run the ZINB deconvolution. The codes are implemented in Python, see <a href="https://github.com/mengyin/general_ash/blob/master/code/zinb.ipynb">here</a>.</p>
+</div>
+<div id="results" class="section level2">
+<h2>Results</h2>
+<pre class="r"><code>res_multi = readRDS(&quot;output/res_zeisel.rds&quot;)
+res_multi_zinb = read_csv(&quot;output/res_zeisel_zinb.csv&quot;)</code></pre>
+<pre><code>Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre class="r"><code>res_multi_zinb = data.frame(res_multi_zinb[,-1], row.names=res_multi_zinb$X1)</code></pre>
+<p>We compare the properties (mean, CV, <span class="math inline">\(\pi_0\)</span>, log-likelihood, etc.) of fitted prior <span class="math inline">\(\hat{G}\)</span> by ZINB, DESCEND, Poisson ASH and nonparametric deconvolution.</p>
+<div id="mean" class="section level3">
+<h3>Mean</h3>
+<p>Plot the fitted prior’s mean:</p>
+<pre class="r"><code>plot(log(res_multi$mean_ash), log(res_multi$mean_ashnonp), 
+     xlab=&quot;Poisson ash&quot;, ylab=&quot;Nonparametric&quot;, main=&quot;Mean of G (log-log scale)&quot;,
+     xlim=c(-7,7),ylim=c(-7,7))
+abline(0,1,col=2)</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(log(res_multi$mean_ash), log(res_multi$mean_descend),
+     xlab=&quot;Poisson ash&quot;, ylab=&quot;DESCEND&quot;, main=&quot;Mean of G (log-log scale)&quot;,
+     xlim=c(-7,7),ylim=c(-7,7))
+abline(0,1,col=2)</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-5-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(log(res_multi$mean_ash), log(res_multi_zinb$mean_zinb),
+     xlab=&quot;Poisson ash&quot;, ylab=&quot;ZINB&quot;, main=&quot;Mean of G (log-log scale)&quot;,
+     xlim=c(-7,7),ylim=c(-7,7))
+abline(0,1,col=2)</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-5-3.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Pearson correlation of the fitted prior mean between two methods:</p>
+<pre class="r"><code>cor(log(res_multi$mean_ash), log(res_multi_zinb$mean_zinb),use=&quot;complete.obs&quot;)</code></pre>
+<pre><code>[1] 0.9997957</code></pre>
+<pre class="r"><code>cor(log(res_multi$mean_ash), log(res_multi$mean_descend),use=&quot;complete.obs&quot;)</code></pre>
+<pre><code>[1] 0.999151</code></pre>
+<pre class="r"><code>cor(log(res_multi$mean_ash), log(res_multi$mean_ashnonp),use=&quot;complete.obs&quot;)</code></pre>
+<pre><code>[1] 0.9997037</code></pre>
+<pre class="r"><code>cor(log(res_multi_zinb$mean_zinb), log(res_multi$mean_descend),use=&quot;complete.obs&quot;)</code></pre>
+<pre><code>[1] 0.9992084</code></pre>
+<pre class="r"><code>compobs = (log(res_multi_zinb$mean_zinb)&gt;-Inf &amp; log(res_multi$mean_ashnonp)&gt;-Inf)
+cor(log(res_multi_zinb$mean_zinb)[compobs], log(res_multi$mean_ashnonp)[compobs])</code></pre>
+<pre><code>[1] 0.9998487</code></pre>
+<pre class="r"><code>cor(log(res_multi$mean_descend), log(res_multi$mean_ashnonp), use=&quot;complete.obs&quot;)</code></pre>
+<pre><code>[1] 0.9990106</code></pre>
+</div>
+<div id="log-likelihood" class="section level3">
+<h3>Log-likelihood</h3>
+<p>Compute the log-likelihood difference between two methods and the proportion of genes falling into the following 5 categories: <span class="math inline">\((-\infty, -5)\)</span> (much lower), <span class="math inline">\((-5,-2)\)</span> (significantly lower), <span class="math inline">\((-2,2)\)</span> (similar), <span class="math inline">\((2,5)\)</span> (significantly higher) and <span class="math inline">\((5,\infty)\)</span> (much higher). We first compare the log-likelihood of the Poisson ASH unimodal model with that of the nonparametric deconvolution.</p>
+<pre class="r"><code># loglike_ashuni is for the unimodal model with a positive mode, 
+# loglike_ashuni0 is for the unimodal model with mode at 0,
+# we choose the model with higher log-likelihood as the optimal unimodal model
+diff.nonp = res_multi$loglike_ashnonp-pmax(res_multi$loglike_ashuni,res_multi$loglike_ashuni0)
+diff.nonp = diff.nonp[!is.na(diff.nonp)]
+hist.nonp = hist(diff.nonp, breaks = c(min(diff.nonp),-5,-2,2,5,max(diff.nonp)),plot=FALSE)
+round(hist.nonp$counts/sum(hist.nonp$counts)*100,2)</code></pre>
+<pre><code>[1]  0.13  0.13 98.94  0.79  0.01</code></pre>
+<p>Then we check the scaled expression distribution for those genes where nonparametric deconvolution gives much higher log-likelihood than Poisson ASH (unimodal).</p>
+<pre class="r"><code>for (i in 1:6){
+  eg = mol_multi[order(pmax(res_multi$loglike_ashuni,res_multi$loglike_ashuni0)-res_multi$loglike_ash)[i],]
+  tab = table(eg, dnn=&quot;Y&quot;)
+  #print(tab)
+  genename = row.names(mol_multi)[order(pmax(res_multi$loglike_ashuni,res_multi$loglike_ashuni0)
+                                        - res_multi$loglike_ashnonp)[i]]
+  hist(eg/scale_multi,150, prob=TRUE, xlab=&quot;Scaled expression&quot;,
+       main=paste0(&quot;Scaled expression distribution for gene &quot;,genename))
+}</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /><img src="figure/zeisel.Rmd/unnamed-chunk-8-2.png" width="672" style="display: block; margin: auto;" /><img src="figure/zeisel.Rmd/unnamed-chunk-8-3.png" width="672" style="display: block; margin: auto;" /><img src="figure/zeisel.Rmd/unnamed-chunk-8-4.png" width="672" style="display: block; margin: auto;" /><img src="figure/zeisel.Rmd/unnamed-chunk-8-5.png" width="672" style="display: block; margin: auto;" /><img src="figure/zeisel.Rmd/unnamed-chunk-8-6.png" width="672" style="display: block; margin: auto;" /></p>
+<p>The log-likelihood improvement upon the Poisson ASH unimodal model for these genes:</p>
+<pre class="r"><code>o = order(pmax(res_multi$loglike_ashuni,res_multi$loglike_ashuni0)
+          - res_multi$loglike_ashnonp)
+tmp = cbind(res_multi,res_multi_zinb)[,c(5,10,27,35)]-pmax(res_multi$loglike_ashuni,res_multi$loglike_ashuni0)
+# substract the baseline ash unimodal model&#39;s log-likelihood
+round(tmp[o[1:6],],2)</code></pre>
+<pre><code>       loglike_ashnonp loglike_ash loglike_descfull loglike_zinb
+Atp1a2            5.61        0.00           -28.12       -18.23
+C1qa              5.25        0.00            -8.97        -7.33
+Eif4a1            4.92        4.35             3.78        -1.98
+Ccl4              4.63        0.00          -214.15        -1.63
+Cdc42             4.50        2.19             3.78         1.42
+Klhl9             4.43        4.16             1.20        -7.64</code></pre>
+<p>The fitted prior for these genes (by DESCEND or Poisson ASH) is shown below. The six genes display a common pattern that, the scaled expression histogram split the cells into zero expression and non-zero expression parts, with noticeable gap between them. This suggests us to consider a more flexible expression distribution in with a point mass at zero <span class="math inline">\(\delta_0\)</span>.</p>
+<pre class="r"><code>par(mfrow=c(1,2))
+for (i in order(pmax(res_multi$loglike_ashuni,res_multi$loglike_ashuni0)
+                - res_multi$loglike_ashnonp)[1:6]){
+  tmp = deconv_sing(as.numeric(mol_multi[i,]), scale=scale_multi, plot.dens=TRUE, plot.cdf = TRUE)
+}</code></pre>
+<pre><code>[1] &quot;Compute penalized MLE, the 1th time&quot;
+[1] &quot;c0 is  1&quot;
+[1] &quot;Relative fake information is:0.57%&quot;
+[1] &quot;Compute penalized MLE, the 2th time&quot;
+[1] &quot;c0 is  1&quot;
+[1] &quot;Relative fake information is:0.57%&quot;
+[1] &quot;Compute LRT tests, in total 1 tests&quot;
+[1] &quot;Compute LRT test, Full model&quot;
+[1] &quot;neg loglikehood is  2234.80736602871 df is  NA&quot;
+[1] &quot;Compute LRT test, Nonzero fraction = 1&quot;
+[1] &quot;neg loglikehood is  2323.6179304625 df is  1&quot;</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Compute penalized MLE, the 1th time&quot;
+[1] &quot;c0 is  1&quot;
+[1] &quot;Relative fake information is:0.74%&quot;
+[1] &quot;Compute penalized MLE, the 2th time&quot;
+[1] &quot;c0 is  1&quot;
+[1] &quot;Relative fake information is:0.74%&quot;
+[1] &quot;Compute LRT tests, in total 1 tests&quot;
+[1] &quot;Compute LRT test, Full model&quot;
+[1] &quot;neg loglikehood is  658.956714111136 df is  NA&quot;
+[1] &quot;Compute LRT test, Nonzero fraction = 1&quot;
+[1] &quot;neg loglikehood is  784.178947132785 df is  1&quot;</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-10-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Compute penalized MLE, the 1th time&quot;
+[1] &quot;c0 is  1&quot;
+[1] &quot;Relative fake information is:2.06%&quot;
+[1] &quot;c0 is  0.242292814503831&quot;
+[1] &quot;Relative fake information is:0.38%&quot;
+[1] &quot;Compute penalized MLE, the 2th time&quot;
+[1] &quot;c0 is  0.242292814503831&quot;
+[1] &quot;Relative fake information is:0.38%&quot;
+[1] &quot;Compute LRT tests, in total 1 tests&quot;
+[1] &quot;Compute LRT test, Full model&quot;
+[1] &quot;neg loglikehood is  1218.69179281787 df is  NA&quot;
+[1] &quot;Compute LRT test, Nonzero fraction = 1&quot;
+[1] &quot;neg loglikehood is  1223.49203410445 df is  1&quot;</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-10-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Compute penalized MLE, the 1th time&quot;
+[1] &quot;c0 is  1&quot;
+[1] &quot;Relative fake information is:0.8%&quot;
+[1] &quot;Compute penalized MLE, the 2th time&quot;
+[1] &quot;c0 is  1&quot;
+[1] &quot;Relative fake information is:0.8%&quot;
+[1] &quot;Compute LRT tests, in total 1 tests&quot;
+[1] &quot;Compute LRT test, Full model&quot;
+[1] &quot;neg loglikehood is  626.052625428832 df is  NA&quot;
+[1] &quot;Compute LRT test, Nonzero fraction = 1&quot;
+[1] &quot;neg loglikehood is  739.093127589323 df is  1&quot;</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-10-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Compute penalized MLE, the 1th time&quot;
+[1] &quot;c0 is  1&quot;
+[1] &quot;Relative fake information is:2.12%&quot;
+[1] &quot;c0 is  0.235872736203665&quot;
+[1] &quot;Relative fake information is:0.33%&quot;
+[1] &quot;Compute penalized MLE, the 2th time&quot;
+[1] &quot;c0 is  0.235872736203665&quot;
+[1] &quot;Relative fake information is:0.33%&quot;
+[1] &quot;Compute LRT tests, in total 1 tests&quot;
+[1] &quot;Compute LRT test, Full model&quot;
+[1] &quot;neg loglikehood is  1297.44569043771 df is  NA&quot;
+[1] &quot;Compute LRT test, Nonzero fraction = 1&quot;
+[1] &quot;neg loglikehood is  1301.73382368463 df is  1&quot;</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-10-5.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Compute penalized MLE, the 1th time&quot;
+[1] &quot;c0 is  1&quot;
+[1] &quot;Relative fake information is:0.98%&quot;
+[1] &quot;Compute penalized MLE, the 2th time&quot;
+[1] &quot;c0 is  1&quot;
+[1] &quot;Relative fake information is:0.98%&quot;
+[1] &quot;Compute LRT tests, in total 1 tests&quot;
+[1] &quot;Compute LRT test, Full model&quot;
+[1] &quot;neg loglikehood is  547.059670574505 df is  NA&quot;
+[1] &quot;Compute LRT test, Nonzero fraction = 1&quot;
+[1] &quot;neg loglikehood is  551.302272729941 df is  1&quot;</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-10-6.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Next, we compare the log-likelihood of the methods with <span class="math inline">\(\delta_0\)</span>: Poisson ASH (<span class="math inline">\(\delta_0\)</span> plus a unimodal prior), DESCEND, ZINB and nonparametric deconvolution. We compute the log-likelihood difference between Poisson ASH and the other three methods and the proportions of falling into 5 categories: <span class="math inline">\((-\infty, -5)\)</span> (much lower), <span class="math inline">\((-5,-2)\)</span> (significantly lower), <span class="math inline">\((-2,2)\)</span> (similar), <span class="math inline">\((2,5)\)</span> (significantly higher) and <span class="math inline">\((5,\infty)\)</span> (much higher).</p>
+<pre class="r"><code>diff.zinb = res_multi_zinb$loglike_zinb-res_multi$loglike_ash
+diff.zinb = diff.zinb[!is.na(diff.zinb)]
+hist.zinb = hist(diff.zinb, breaks = c(min(diff.zinb),-5,-2,2,5,max(diff.zinb)),plot=FALSE)
+round(hist.zinb$counts/sum(hist.zinb$counts)*100,2)</code></pre>
+<pre><code>[1]  2.43 12.09 85.48  0.01  0.00</code></pre>
+<pre class="r"><code>diff.desc = res_multi$loglike_descfull-res_multi$loglike_ash
+diff.desc = diff.desc[!is.na(diff.desc)]
+hist.desc = hist(diff.desc, breaks = c(min(diff.desc),-5,-2,2,5,max(diff.desc)),plot=FALSE)
+round(hist.desc$counts/sum(hist.desc$counts)*100,2)</code></pre>
+<pre><code>[1]  6.26  7.71 85.93  0.09  0.01</code></pre>
+<pre class="r"><code>diff.nonp = res_multi$loglike_ashnonp-res_multi$loglike_ash
+diff.nonp = diff.nonp[!is.na(diff.nonp)]
+hist.nonp = hist(diff.nonp, breaks = c(min(diff.nonp),-5,-2,2,5,max(diff.nonp)),plot=FALSE)
+round(hist.nonp$counts/sum(hist.nonp$counts)*100,2)</code></pre>
+<pre><code>[1]  0.13  0.11 99.02  0.72  0.01</code></pre>
+<p>Check those genes where DESCEND’s log-likelihood is much higher than Poisson ASH. See if there are multimodal patterns for these genes such that Poisson ASH is insufficient.</p>
+<pre class="r"><code>par(mfrow=c(1,2))
+for (i in 1:5){
+  eg = mol_multi[order(res_multi$loglike_ash - res_multi$loglike_descfull)[i],]
+  genename = row.names(mol_multi)[order(res_multi$loglike_ash - 
+                                          res_multi$loglike_descfull)[i]]
+  eg_scaled = eg/scale_multi
+  hist(eg_scaled,150, xlab=&quot;Scaled expression&quot;,
+       main=paste0(&quot;Scaled expression for gene &quot;,genename))
+  hist(eg_scaled[eg_scaled&gt;0],50, xlab=&quot;Scaled expression&quot;,
+       main=paste0(&quot;Non-zero scaled expression for gene &quot;,genename))
+}</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /><img src="figure/zeisel.Rmd/unnamed-chunk-12-2.png" width="672" style="display: block; margin: auto;" /><img src="figure/zeisel.Rmd/unnamed-chunk-12-3.png" width="672" style="display: block; margin: auto;" /><img src="figure/zeisel.Rmd/unnamed-chunk-12-4.png" width="672" style="display: block; margin: auto;" /><img src="figure/zeisel.Rmd/unnamed-chunk-12-5.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Then plot the fitted prior by DESCEND and Poisson ASH for these genes. The cdf plots indicate that for genes Nek7, Agpat3, Tdrp and Gak, DESCEND puts a much heavier probability mass on the right tail outside the x-axis range than Poisson ASH, which is actually unconvincing according to the above original scaled expression histogram.</p>
+<pre class="r"><code>par(mfrow=c(1,2))
+for (i in order(res_multi$loglike_ash - res_multi$loglike_descfull)[1:5]){
+  tmp = deconv_sing(as.numeric(mol_multi[i,]), scale=scale_multi, plot.dens=TRUE, plot.cdf = TRUE)
+}</code></pre>
+<pre><code>[1] &quot;Compute penalized MLE, the 1th time&quot;
+[1] &quot;c0 is  1&quot;
+[1] &quot;Relative fake information is:2.03%&quot;
+[1] &quot;c0 is  0.245779354616191&quot;
+[1] &quot;Relative fake information is:0.76%&quot;
+[1] &quot;Compute penalized MLE, the 2th time&quot;
+[1] &quot;c0 is  0.245779354616191&quot;
+[1] &quot;Relative fake information is:0.76%&quot;
+[1] &quot;Compute LRT tests, in total 1 tests&quot;
+[1] &quot;Compute LRT test, Full model&quot;
+[1] &quot;neg loglikehood is  338.108319548497 df is  NA&quot;
+[1] &quot;Compute LRT test, Nonzero fraction = 1&quot;
+[1] &quot;neg loglikehood is  342.014797319523 df is  1&quot;</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Compute penalized MLE, the 1th time&quot;
+[1] &quot;c0 is  1&quot;
+[1] &quot;Relative fake information is:3.42%&quot;
+[1] &quot;c0 is  0.146105931134089&quot;
+[1] &quot;Relative fake information is:0.62%&quot;
+[1] &quot;Compute penalized MLE, the 2th time&quot;
+[1] &quot;c0 is  0.146105931134089&quot;
+[1] &quot;Relative fake information is:0.62%&quot;
+[1] &quot;Compute LRT tests, in total 1 tests&quot;
+[1] &quot;Compute LRT test, Full model&quot;
+[1] &quot;neg loglikehood is  470.878808566412 df is  NA&quot;
+[1] &quot;Compute LRT test, Nonzero fraction = 1&quot;
+[1] &quot;neg loglikehood is  470.96483996469 df is  1&quot;</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-13-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Compute penalized MLE, the 1th time&quot;
+[1] &quot;c0 is  1&quot;
+[1] &quot;Relative fake information is:3.42%&quot;
+[1] &quot;c0 is  0.146230493990446&quot;
+[1] &quot;Relative fake information is:0.32%&quot;
+[1] &quot;Compute penalized MLE, the 2th time&quot;
+[1] &quot;c0 is  0.146230493990446&quot;
+[1] &quot;Relative fake information is:0.32%&quot;
+[1] &quot;Compute LRT tests, in total 1 tests&quot;
+[1] &quot;Compute LRT test, Full model&quot;
+[1] &quot;neg loglikehood is  108.367637473024 df is  NA&quot;
+[1] &quot;Compute LRT test, Nonzero fraction = 1&quot;
+[1] &quot;neg loglikehood is  128.780116865911 df is  1&quot;</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-13-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Compute penalized MLE, the 1th time&quot;
+[1] &quot;c0 is  1&quot;
+[1] &quot;Relative fake information is:1.62%&quot;
+[1] &quot;c0 is  0.309382786246412&quot;
+[1] &quot;Relative fake information is:0.64%&quot;
+[1] &quot;Compute penalized MLE, the 2th time&quot;
+[1] &quot;c0 is  0.309382786246412&quot;
+[1] &quot;Relative fake information is:0.64%&quot;
+[1] &quot;Compute LRT tests, in total 1 tests&quot;
+[1] &quot;Compute LRT test, Full model&quot;
+[1] &quot;neg loglikehood is  433.676626716483 df is  NA&quot;
+[1] &quot;Compute LRT test, Nonzero fraction = 1&quot;
+[1] &quot;neg loglikehood is  434.843658037773 df is  1&quot;</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-13-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>[1] &quot;Compute penalized MLE, the 1th time&quot;
+[1] &quot;c0 is  1&quot;
+[1] &quot;Relative fake information is:2.03%&quot;
+[1] &quot;c0 is  0.245710528453862&quot;
+[1] &quot;Relative fake information is:0.88%&quot;
+[1] &quot;Compute penalized MLE, the 2th time&quot;
+[1] &quot;c0 is  0.245710528453862&quot;
+[1] &quot;Relative fake information is:0.88%&quot;
+[1] &quot;Compute LRT tests, in total 1 tests&quot;
+[1] &quot;Compute LRT test, Full model&quot;
+[1] &quot;neg loglikehood is  308.3651306127 df is  NA&quot;
+[1] &quot;Compute LRT test, Nonzero fraction = 1&quot;
+[1] &quot;neg loglikehood is  312.691412911858 df is  1&quot;</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-13-5.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Now we check if the sub-population structure of cell types could result in multimodal patterns, take gene Agpat3 as example:</p>
+<pre class="r"><code>idx = 2
+Y = mol_multi[order(res_multi$loglike_ash - res_multi$loglike_descfull)[idx],]
+genename = row.names(mol_multi)[order(res_multi$loglike_ash - 
+                                        res_multi$loglike_descfull)[idx]]
+Y_scaled = Y/scale_multi
+types1 = types[Y_scaled&gt;0]
+Y_scaled = Y_scaled[Y_scaled&gt;0]
+
+plot(Y_scaled[types1==&quot;microglia&quot;],rep(0,sum(types1==&quot;microglia&quot;)), 
+     axes=FALSE, ylab=&quot;&quot;,xlab=&quot;scaled expression&quot;,pch=1, col=&quot;grey20&quot;,
+     xlim=c(0,max(Y_scaled)), ylim=c(-0.5,5),
+     main=paste0(&quot;Scaled expression for gene &quot;,genename,&quot;, grouped by cell type&quot;))
+points(Y_scaled[types1==&quot;endothelial&quot;],rep(1,sum(types1==&quot;endothelial&quot;)),pch=1, col=&quot;grey20&quot;)
+points(Y_scaled[types1==&quot;astrocytes&quot;],rep(2,sum(types1==&quot;astrocytes&quot;)),pch=1, col=&quot;grey20&quot;)
+points(Y_scaled[types1==&quot;ependymal&quot;],rep(3,sum(types1==&quot;ependymal&quot;)),pch=1, col=&quot;grey20&quot;)
+points(Y_scaled[types1==&quot;mural&quot;],rep(4,sum(types1==&quot;mural&quot;)),pch=1, col=&quot;grey20&quot;)
+axis(2, 0:4, labels=c(&quot;microglia&quot;,&quot;endothelial&quot;,&quot;astrocytes&quot;,&quot;ependymal&quot;,&quot;mural&quot;),
+     las=1)
+axis(1, seq(0, max(Y_scaled)+1, 1))</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>The most notable difference in scaled expression distribution among different cell types is in the tail shape. The scaled expression distribution of Astrocytes cells yields significantly longer tail than that of Ependymal and Microglia, and also shows a rough bimodal pattern with two major parts split at 3. On the other hand, the scaled expression levels for Microglia and Ependymal cells are quite low and concentrated, and the scaled expression of Mural cells is either smaller than 3 or bigger than 9. This example shows that the scaled expression seems to have different spreads for different cell types, rather than yielding different mode/average levels. The bimodal pattern within Astrocytes mainly contributes to the overall “bimodal” scaled expression distribution, while the differences in expression distribution among the other cell types seem to be determined mainly by spreads.</p>
+<p>Note that in Poisson ASH, the prior <span class="math inline">\(H_g\)</span> consists of many uniform mixture components with different widths (anchored at same mode). Even though the mixture components were not specifically designed for clustering sub-populations, their various spreads seem to corroborate the phenomenon described above, in that different sub-populations have tails with differing lengths.</p>
+</div>
+<div id="cv" class="section level3">
+<h3>CV</h3>
+<p>Compare the coefficient of variation (CV) of fitted prior:</p>
+<pre class="r"><code>plot(res_multi$cv_ash, res_multi$cv_ashnonp, 
+     xlab=&quot;Poisson ash&quot;, ylab=&quot;Nonparametric&quot;, main=&quot;CV of G&quot;,
+     xlim=c(0,50),ylim=c(0,50))
+abline(0,1,col=2)</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(res_multi$cv_ash, res_multi$cv_descend,
+     xlab=&quot;Poisson ash&quot;, ylab=&quot;DESCEND&quot;, main=&quot;CV of G&quot;,
+     xlim=c(0,50),ylim=c(0,50))
+abline(0,1,col=2)</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-15-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(res_multi$cv_ash, res_multi_zinb$cv_zinb,
+     xlab=&quot;Poisson ash&quot;, ylab=&quot;ZINB&quot;, main=&quot;CV of G&quot;,
+     xlim=c(0,50),ylim=c(0,50))
+abline(0,1,col=2)</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-15-3.png" width="672" style="display: block; margin: auto;" /></p>
+<p>After removing genes with less than 5 expressed cells:</p>
+<pre class="r"><code>compobs = (rowSums(mol_multi&gt;0)&gt;=5)
+
+plot(res_multi$cv_ash[compobs], res_multi$cv_ashnonp[compobs], 
+     xlab=&quot;Poisson ash&quot;, ylab=&quot;Nonparametric&quot;, main=&quot;CV of G (filtered data)&quot;,
+     xlim=c(0,50),ylim=c(0,50))
+abline(0,1,col=2)</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(res_multi$cv_ash[compobs], res_multi$cv_descend[compobs],
+     xlab=&quot;Poisson ash&quot;, ylab=&quot;DESCEND&quot;, main=&quot;CV of G (filtered data)&quot;,
+     xlim=c(0,50),ylim=c(0,50))
+abline(0,1,col=2)</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-16-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(res_multi$cv_ash[compobs], res_multi_zinb$cv_zinb[compobs],
+     xlab=&quot;Poisson ash&quot;, ylab=&quot;ZINB&quot;, main=&quot;CV of G (filtered data)&quot;,
+     xlim=c(0,50),ylim=c(0,50))
+abline(0,1,col=2)</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-16-3.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Pearson correlation of fitted prior CV between two methods (after removing genes with less than 5 expressed cells):</p>
+<pre class="r"><code>cor(res_multi$cv_ash[compobs], res_multi_zinb$cv_zinb[compobs],use=&quot;complete.obs&quot;)</code></pre>
+<pre><code>[1] 0.9718503</code></pre>
+<pre class="r"><code>cor(res_multi$cv_ash[compobs], res_multi$cv_descend[compobs],use=&quot;complete.obs&quot;)</code></pre>
+<pre><code>[1] 0.9228191</code></pre>
+<pre class="r"><code>cor(res_multi$cv_ash[compobs], res_multi$cv_ashnonp[compobs],use=&quot;complete.obs&quot;)</code></pre>
+<pre><code>[1] 0.9905929</code></pre>
+<pre class="r"><code>cor(res_multi_zinb$cv_zinb[compobs], res_multi$cv_descend[compobs],use=&quot;complete.obs&quot;)</code></pre>
+<pre><code>[1] 0.9452119</code></pre>
+<pre class="r"><code>cor(res_multi_zinb$cv_zinb[compobs], res_multi$cv_ashnonp[compobs],use=&quot;complete.obs&quot;)</code></pre>
+<pre><code>[1] 0.9589812</code></pre>
+<pre class="r"><code>cor(res_multi$cv_descend[compobs], res_multi$cv_ashnonp[compobs], use=&quot;complete.obs&quot;)</code></pre>
+<pre><code>[1] 0.9198512</code></pre>
+</div>
+<div id="zero-fraction-pi_0" class="section level3">
+<h3>Zero fraction <span class="math inline">\(\pi_0\)</span></h3>
+<p>Compare the zero fraction of fitted prior <span class="math inline">\(\hat{\pi}_0\)</span>:</p>
+<pre class="r"><code>plot(res_multi$pi0_ash, res_multi$pi0_ashnonp, 
+     xlab=&quot;Poisson ash&quot;, ylab=&quot;Nonparametric&quot;, main=&quot;Null proportion of G&quot;,
+     xlim=c(0,1),ylim=c(0,1))
+abline(0,1,col=2)</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-18-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(res_multi$pi0_ash, res_multi$pi0_descend,
+     xlab=&quot;Poisson ash&quot;, ylab=&quot;DESCEND&quot;, main=&quot;Null proportion of G&quot;,
+     xlim=c(0,1),ylim=c(0,1))
+abline(0,1,col=2)</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-18-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(res_multi$pi0_ash, res_multi_zinb$pi0_zinb,
+     xlab=&quot;Poisson ash&quot;, ylab=&quot;ZINB&quot;, main=&quot;Null proportion of G&quot;,
+     xlim=c(0,1),ylim=c(0,1))
+abline(0,1,col=2)</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-18-3.png" width="672" style="display: block; margin: auto;" /></p>
+<p>After removing genes with less than 5 expressed cells:</p>
+<pre class="r"><code>plot(res_multi$pi0_ash[compobs], res_multi$pi0_ashnonp[compobs], 
+     xlab=&quot;Poisson ash&quot;, ylab=&quot;Nonparametric&quot;, main=&quot;Null proportion of G&quot;,
+     xlim=c(0,1),ylim=c(0,1))
+abline(0,1,col=2)</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(res_multi$pi0_ash[compobs], res_multi$pi0_descend[compobs],
+     xlab=&quot;Poisson ash&quot;, ylab=&quot;DESCEND&quot;, main=&quot;Null proportion of G&quot;,
+     xlim=c(0,1),ylim=c(0,1))
+abline(0,1,col=2)</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-19-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(res_multi$pi0_ash[compobs], res_multi_zinb$pi0_zinb[compobs],
+     xlab=&quot;Poisson ash&quot;, ylab=&quot;ZINB&quot;, main=&quot;Null proportion of G&quot;,
+     xlim=c(0,1),ylim=c(0,1))
+abline(0,1,col=2)</code></pre>
+<p><img src="figure/zeisel.Rmd/unnamed-chunk-19-3.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="session-information" class="section level2">
+<h2>Session information</h2>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.5.0 (2018-04-23)
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+Running under: macOS High Sierra 10.13.3
+
+Matrix products: default
+BLAS: /Library/Frameworks/R.framework/Versions/3.5/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/3.5/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] parallel  stats4    stats     graphics  grDevices utils     datasets 
+[8] methods   base     
+
+other attached packages:
+ [1] descend_0.0.0.9000          ashr_2.2-8                 
+ [3] readr_1.1.1                 SingleCellExperiment_1.2.0 
+ [5] SummarizedExperiment_1.10.1 DelayedArray_0.6.2         
+ [7] BiocParallel_1.14.2         matrixStats_0.54.0         
+ [9] Biobase_2.40.0              GenomicRanges_1.32.6       
+[11] GenomeInfoDb_1.16.0         IRanges_2.14.10            
+[13] S4Vectors_0.18.3            BiocGenerics_0.26.0        
+
+loaded via a namespace (and not attached):
+ [1] splines_3.5.0          lattice_0.20-35        htmltools_0.3.6       
+ [4] yaml_2.2.0             rlang_0.2.1            R.oo_1.22.0           
+ [7] pillar_1.3.0           R.utils_2.6.0          GenomeInfoDbData_1.1.0
+[10] foreach_1.4.4          stringr_1.3.1          zlibbioc_1.26.0       
+[13] MatrixModels_0.4-1     workflowr_1.1.1        R.methodsS3_1.7.1     
+[16] codetools_0.2-15       evaluate_0.11          knitr_1.20            
+[19] SparseM_1.77           doParallel_1.0.11      pscl_1.5.2            
+[22] quantreg_5.36          Rcpp_0.12.18           backports_1.1.2       
+[25] XVector_0.20.0         truncnorm_1.0-8        hms_0.4.2             
+[28] digest_0.6.15          stringi_1.2.4          grid_3.5.0            
+[31] rprojroot_1.3-2        tools_3.5.0            bitops_1.0-6          
+[34] magrittr_1.5           RCurl_1.95-4.11        tibble_1.4.2          
+[37] crayon_1.3.4           whisker_0.3-2          pkgconfig_2.0.1       
+[40] MASS_7.3-50            Matrix_1.2-14          SQUAREM_2017.10-1     
+[43] assertthat_0.2.0       rmarkdown_1.10         rstudioapi_0.7        
+[46] iterators_1.0.10       R6_2.2.2               git2r_0.23.0          
+[49] compiler_3.5.0        </code></pre>
+</div>
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+<hr>
+<p>
+  This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a>
+  analysis was created with
+  <a href="https://github.com/jdblischak/workflowr">workflowr</a> 1.1.1
+</p>
+<hr>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
